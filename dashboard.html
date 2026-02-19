@@ -11,30 +11,13 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 body{background:#0b1120;color:white;padding-bottom:90px;}
 
-.header{
-background:#111827;
-padding:15px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
+.header{background:#111827;padding:15px;display:flex;justify-content:space-between;align-items:center;}
 .brandBox{display:flex;align-items:center;gap:10px;}
-
 .logoAnimado{width:45px;animation:spin 4s linear infinite;}
-
-@keyframes spin{
-from{transform:rotate(0deg);}
-to{transform:rotate(360deg);}
-}
-
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 .brand{color:#00ff88;font-weight:bold;font-size:20px;}
 .brandFrase{font-size:14px;opacity:.8;}
-
-.logout{
-background:#ff4d4d;border:none;
-padding:8px 12px;border-radius:6px;color:white;
-}
+.logout{background:#ff4d4d;border:none;padding:8px 12px;border-radius:6px;color:white;}
 
 #bienvenida{text-align:center;margin-top:10px;font-size:16px;}
 
@@ -49,15 +32,10 @@ padding:25px;margin:15px;border-radius:18px;text-align:center;
 .plan{display:flex;align-items:center;gap:12px;margin-top:10px;}
 .plan img{width:55px;height:55px;border-radius:10px;background:white;}
 
-.buy{
-margin-left:auto;background:#00ff88;border:none;
-padding:8px 14px;border-radius:6px;
-font-weight:bold;cursor:pointer;
-}
+.buy{margin-left:auto;background:#00ff88;border:none;padding:8px 14px;border-radius:6px;font-weight:bold;cursor:pointer;}
 
 input,select{
-width:100%;
-padding:10px;border-radius:8px;border:none;
+width:100%;padding:10px;border-radius:8px;border:none;
 margin-top:8px;background:#0f172a;color:white;
 }
 
@@ -67,39 +45,36 @@ padding:12px;border-radius:10px;margin-top:10px;
 font-size:14px;
 }
 
+/* COLORES ESTADOS */
+.estado-pendiente{color:#facc15;}
+.estado-aprobado{color:#22c55e;}
+.estado-rechazado{color:#ef4444;}
+
 .menu{
 position:fixed;bottom:0;left:0;width:100%;
 background:#111827;
 display:flex;justify-content:space-around;
 padding:12px 0;
 }
-
-.menu button{
-background:none;border:none;color:white;font-size:14px;
-}
+.menu button{background:none;border:none;color:white;font-size:14px;}
 
 .section{display:none;}
 .section.active{display:block;}
 
 .modal{
-position:fixed;top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,.6);
-display:none;align-items:center;justify-content:center;
-z-index:999;
+position:fixed;top:0;left:0;width:100%;height:100%;
+background:rgba(0,0,0,.6);display:none;
+align-items:center;justify-content:center;z-index:999;
 }
 
 .modalBox{
-background:#111827;
-padding:25px;border-radius:15px;
+background:#111827;padding:25px;border-radius:15px;
 width:85%;text-align:center;
 }
-
 .modalBox h2{color:#00ff88;margin-bottom:10px;}
 .modalBox button{
-margin-top:15px;padding:8px 15px;
-border:none;border-radius:6px;
-background:#00ff88;font-weight:bold;
+margin-top:15px;padding:8px 15px;border:none;
+border-radius:6px;background:#00ff88;font-weight:bold;
 }
 </style>
 </head>
@@ -175,7 +150,6 @@ background:#00ff88;font-weight:bold;
 <h3>Solicitar retiro</h3>
 
 <select id="banco">
-<option value="">Selecciona banco</option>
 <option>Banco General</option>
 <option>Banistmo</option>
 <option>Caja de Ahorros</option>
@@ -257,25 +231,7 @@ bienvenida.textContent="Bienvenido "+data.usuario+" 👋";
 }
 cargarUsuario();
 
-async function comprar(precio,ganancia,plan){
-
-if(usuarioData.saldo < precio){
-mostrarModal("Error","Saldo insuficiente");
-return;
-}
-
-await supabaseClient.from("usuarios")
-.update({saldo:usuarioData.saldo-precio})
-.eq("usuario",usuarioActivo);
-
-await supabaseClient.from("historial")
-.insert({usuario:usuarioActivo,plan,precio,ganancia});
-
-mostrarModal("Éxito","Plan activado");
-cargarUsuario();
-cargarHistorial();
-}
-
+/* HISTORIAL */
 async function cargarHistorial(){
 const { data } = await supabaseClient
 .from("historial")
@@ -296,33 +252,7 @@ ${new Date(i.created_at).toLocaleString()}
 }
 cargarHistorial();
 
-async function retirar(){
-let monto=Number(montoRetiro.value);
-let bancoSel=banco.value;
-let cuentaSel=cuenta.value;
-
-if(!monto||!bancoSel||!cuentaSel){
-mostrarModal("Error","Completa todo");
-return;
-}
-
-if(monto>usuarioData.saldo){
-mostrarModal("Error","Saldo insuficiente");
-return;
-}
-
-await supabaseClient.from("usuarios")
-.update({saldo:usuarioData.saldo-monto})
-.eq("usuario",usuarioActivo);
-
-await supabaseClient.from("retiros")
-.insert({usuario:usuarioActivo,monto,banco:bancoSel,cuenta:cuentaSel,estado:"Pendiente"});
-
-mostrarModal("Listo","Retiro enviado");
-cargarUsuario();
-cargarRetiros();
-}
-
+/* RETIROS */
 async function cargarRetiros(){
 const { data } = await supabaseClient
 .from("retiros")
@@ -337,30 +267,14 @@ listaRetiros.innerHTML+=`
 Monto: $${r.monto}<br>
 Banco: ${r.banco}<br>
 Cuenta: ${r.cuenta}<br>
-Estado: ${r.estado}<br>
+Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
 ${new Date(r.created_at).toLocaleString()}
 </div>`;
 });
 }
 cargarRetiros();
 
-async function recargarSaldo(){
-let metodo=metodoRecarga.value;
-let monto=Number(montoRecarga.value);
-let ref=referenciaRecarga.value;
-
-if(!monto||!ref){
-mostrarModal("Error","Completa todo");
-return;
-}
-
-await supabaseClient.from("recargas")
-.insert({usuario:usuarioActivo,monto,metodo,referencia:ref,estado:"Pendiente"});
-
-mostrarModal("Enviado","Recarga en revisión");
-cargarRecargas();
-}
-
+/* RECARGAS */
 async function cargarRecargas(){
 const { data } = await supabaseClient
 .from("recargas")
@@ -375,7 +289,7 @@ listaRecargas.innerHTML+=`
 Monto: $${r.monto}<br>
 Método: ${r.metodo}<br>
 Referencia: ${r.referencia}<br>
-Estado: ${r.estado}<br>
+Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
 ${new Date(r.created_at).toLocaleString()}
 </div>`;
 });
