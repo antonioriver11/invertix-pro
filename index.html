@@ -33,17 +33,15 @@ color:#EAEAEA;
 /* Fondo animado */
 body::before{
 content:"";
-position:absolute;
-width:200%;
-height:200%;
-background:radial-gradient(circle,#00c6ff22 0%,transparent 90%);
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:radial-gradient(circle at center,#00c6ff22 0%,transparent 60%);
+animation:mover 12s infinite alternate;
+z-index:-1;
 }
-
-@keyframes mover{
-from{transform:translate(-20%,-20%);}
-to{transform:translate(20%,20%);}
-}
-
 /* Caja */
 .container{
 background:rgba(255,255,255,0.05);
