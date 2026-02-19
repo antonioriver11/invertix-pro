@@ -196,7 +196,39 @@ font-weight:bold;
 <div><p>Pro</p><p>$75 → $10/día</p></div>
 <button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
 </div>
+  
+<!-- RECARGAR -->
+<div id="recargar" class="section">
 
+<div class="card">
+<h3>Recargar saldo</h3>
+
+<select id="metodoRecarga">
+<option value="">Selecciona método</option>
+<option value="Transferencia bancaria">Transferencia bancaria</option>
+<option value="ACH Express">ACH Express</option>
+</select>
+
+<input id="montoRecarga" type="number" placeholder="Monto a recargar">
+
+<input id="referenciaRecarga" placeholder="Número de referencia / comprobante">
+
+<button class="buy" onclick="recargarSaldo()">Enviar solicitud</button>
+
+<p style="margin-top:10px;font-size:13px;opacity:.8;">
+Luego de realizar la transferencia o ACH Express,
+envía el número de referencia para validar tu recarga.
+</p>
+
+</div>
+
+<div class="card">
+<h3>Mis recargas</h3>
+<div id="listaRecargas"></div>
+</div>
+
+</div>
+  
 <!-- HISTORIAL -->
 <div id="historial" class="section">
 <div class="card">
