@@ -84,7 +84,7 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="brandFrase">Tu dinero creciendo todos los días 💰</div>
 </div>
 </div>
-<button class="logout" onclick="logout();vibrar()">Salir</button>
+<button class="logout" onclick="logout()">Salir</button>
 </div>
 
 <h3 id="bienvenida"></h3>
@@ -101,25 +101,25 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="plan">
 <img src="plan1.jpg">
 <div><p>Starter</p><p>$25 → $5/día</p></div>
-<button class="buy" onclick="vibrar();comprar(25,5,'Starter')">Comprar</button>
+<button class="buy" onclick="comprar(25,5,'Starter')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan2.jpg">
 <div><p>Growth</p><p>$50 → $7/día</p></div>
-<button class="buy" onclick="vibrar();comprar(50,7,'Growth')">Comprar</button>
+<button class="buy" onclick="comprar(50,7,'Growth')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan3.jpg">
 <div><p>Pro</p><p>$75 → $10/día</p></div>
-<button class="buy" onclick="vibrar();comprar(75,10,'Pro')">Comprar</button>
+<button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan4.jpg">
 <div><p>Elite</p><p>$100 → $15/día</p></div>
-<button class="buy" onclick="vibrar();comprar(100,15,'Elite')">Comprar</button>
+<button class="buy" onclick="comprar(100,15,'Elite')">Comprar</button>
 </div>
 
 </div>
@@ -136,12 +136,22 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="card">
 <h3>Solicitar retiro</h3>
 
-<select id="banco"></select>
+<select id="banco">
+<option value="">Selecciona banco</option>
+<option>Banco General</option>
+<option>Caja de Ahorros</option>
+<option>Banistmo</option>
+<option>Global Bank</option>
+<option>Multibank</option>
+<option>Credicorp Bank</option>
+<option>Scotiabank</option>
+</select>
+
 <input id="nombreTitular" placeholder="Nombre completo">
 <input id="cuenta" placeholder="Número de cuenta">
 <input id="montoRetiro" placeholder="Monto">
 
-<button class="buy" onclick="vibrar();retirar()">Solicitar</button>
+<button class="buy" onclick="retirar()">Solicitar</button>
 </div>
 
 <div class="card">
@@ -151,18 +161,12 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 
 <div class="menu">
-<button onclick="vibrar();showSection('dash')">Dashboard</button>
-<button onclick="vibrar();showSection('historial')">Historial</button>
-<button onclick="vibrar();showSection('retiro')">Retiro</button>
+<button onclick="showSection('dash')">Dashboard</button>
+<button onclick="showSection('historial')">Historial</button>
+<button onclick="showSection('retiro')">Retiro</button>
 </div>
 
 <script>
-
-function vibrar(){
- if(navigator.vibrate){
-   navigator.vibrate(40);
- }
-}
 
 const { createClient } = supabase;
 
@@ -176,6 +180,17 @@ if(!usuarioActivo) location.href="index.html";
 
 let usuarioData;
 
+/* MODAL */
+function mostrarModal(titulo,texto){
+document.getElementById("modalTitulo").textContent=titulo;
+document.getElementById("modalTexto").textContent=texto;
+document.getElementById("modal").style.display="flex";
+}
+function cerrarModal(){
+document.getElementById("modal").style.display="none";
+}
+
+/* CARGAR USUARIO */
 async function cargarUsuario(){
 const { data } = await supabaseClient
 .from("usuarios")
@@ -184,6 +199,7 @@ const { data } = await supabaseClient
 .single();
 
 usuarioData=data;
+
 document.getElementById("saldo").textContent="$"+data.saldo;
 document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" 👋";
 }
@@ -197,7 +213,7 @@ const { data } = await supabaseClient
 .eq("usuario",usuarioActivo)
 .order("created_at",{ascending:false});
 
-const cont=document.getElementById("listaHistorial");
+const cont = document.getElementById("listaHistorial");
 cont.innerHTML="";
 if(!data || data.length===0){
 cont.innerHTML="<p>No hay compras todavía</p>";
@@ -240,6 +256,26 @@ ${new Date(r.created_at).toLocaleString()}
 });
 }
 cargarRetiros();
+
+/* AUTO REFRESCO POR INACTIVIDAD (60s) */
+let tiempoInactivo = 0;
+
+setInterval(() => {
+tiempoInactivo++;
+
+if(tiempoInactivo >= 60){
+cargarUsuario();
+cargarHistorial();
+cargarRetiros();
+tiempoInactivo = 0;
+}
+
+},1000);
+
+document.addEventListener("mousemove",()=>tiempoInactivo=0);
+document.addEventListener("click",()=>tiempoInactivo=0);
+document.addEventListener("keydown",()=>tiempoInactivo=0);
+document.addEventListener("touchstart",()=>tiempoInactivo=0);
 
 /* MENU */
 function showSection(id){
