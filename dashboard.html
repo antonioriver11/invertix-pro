@@ -423,6 +423,30 @@ location.href="index.html";
 }
 
 </script>
+let tiempoInactivo = 0;
 
+// Cada segundo cuenta inactividad
+setInterval(() => {
+  tiempoInactivo++;
+
+  // Si pasa 60 segundos sin actividad → refrescar datos
+  if(tiempoInactivo >= 60){
+    cargarUsuario();
+    cargarHistorial();
+    cargarRetiros();
+    tiempoInactivo = 0;
+  }
+
+}, 1000);
+
+// Detectar actividad del usuario
+document.addEventListener("mousemove", resetInactividad);
+document.addEventListener("keydown", resetInactividad);
+document.addEventListener("click", resetInactividad);
+document.addEventListener("touchstart", resetInactividad);
+
+function resetInactividad(){
+  tiempoInactivo = 0;
+}
 </body>
 </html>
