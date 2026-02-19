@@ -68,9 +68,6 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 
 <body>
 
-<!-- BOTON OCULTO PARA DESBLOQUEAR AUDIO -->
-<button id="unlockAudio" style="display:none;"></button>
-
 <div id="modal" class="modal">
 <div class="modalBox">
 <h2 id="modalTitulo"></h2>
@@ -87,7 +84,7 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="brandFrase">Tu dinero creciendo todos los días 💰</div>
 </div>
 </div>
-<button class="logout" onclick="logout()">Salir</button>
+<button class="logout" onclick="logout();vibrar()">Salir</button>
 </div>
 
 <h3 id="bienvenida"></h3>
@@ -104,25 +101,25 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="plan">
 <img src="plan1.jpg">
 <div><p>Starter</p><p>$25 → $5/día</p></div>
-<button class="buy" onclick="sonarCaja();comprar(25,5,'Starter')">Comprar</button>
+<button class="buy" onclick="vibrar();comprar(25,5,'Starter')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan2.jpg">
 <div><p>Growth</p><p>$50 → $7/día</p></div>
-<button class="buy" onclick="sonarCaja();comprar(50,7,'Growth')">Comprar</button>
+<button class="buy" onclick="vibrar();comprar(50,7,'Growth')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan3.jpg">
 <div><p>Pro</p><p>$75 → $10/día</p></div>
-<button class="buy" onclick="sonarCaja();comprar(75,10,'Pro')">Comprar</button>
+<button class="buy" onclick="vibrar();comprar(75,10,'Pro')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan4.jpg">
 <div><p>Elite</p><p>$100 → $15/día</p></div>
-<button class="buy" onclick="sonarCaja();comprar(100,15,'Elite')">Comprar</button>
+<button class="buy" onclick="vibrar();comprar(100,15,'Elite')">Comprar</button>
 </div>
 
 </div>
@@ -140,12 +137,11 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <h3>Solicitar retiro</h3>
 
 <select id="banco"></select>
-
 <input id="nombreTitular" placeholder="Nombre completo">
 <input id="cuenta" placeholder="Número de cuenta">
 <input id="montoRetiro" placeholder="Monto">
 
-<button class="buy" onclick="sonarCaja();retirar()">Solicitar</button>
+<button class="buy" onclick="vibrar();retirar()">Solicitar</button>
 </div>
 
 <div class="card">
@@ -155,51 +151,19 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 
 <div class="menu">
-<button onclick="sonarClick();showSection('dash')">Dashboard</button>
-<button onclick="sonarClick();showSection('historial')">Historial</button>
-<button onclick="sonarClick();showSection('retiro')">Retiro</button>
+<button onclick="vibrar();showSection('dash')">Dashboard</button>
+<button onclick="vibrar();showSection('historial')">Historial</button>
+<button onclick="vibrar();showSection('retiro')">Retiro</button>
 </div>
 
 <script>
 
-/* SONIDOS */
-const cashSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-cash-register-purchase-873.mp3");
-const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3");
-
-let audioUnlocked=false;
-
-function desbloquearAudio(){
- if(audioUnlocked) return;
-
- cashSound.muted=false;
- clickSound.muted=false;
-
- cashSound.play().then(()=>cashSound.pause());
- clickSound.play().then(()=>clickSound.pause());
-
- audioUnlocked=true;
-}
-
-document.addEventListener("click",desbloquearAudio);
-document.addEventListener("touchstart",desbloquearAudio);
-
-function sonarCaja(){
- if(audioUnlocked){
-  cashSound.currentTime=0;
-  cashSound.play();
+function vibrar(){
+ if(navigator.vibrate){
+   navigator.vibrate(40);
  }
- if(navigator.vibrate) navigator.vibrate(80);
 }
 
-function sonarClick(){
- if(audioUnlocked){
-  clickSound.currentTime=0;
-  clickSound.play();
- }
- if(navigator.vibrate) navigator.vibrate(30);
-}
-
-/* SUPABASE */
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -225,6 +189,59 @@ document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" �
 }
 cargarUsuario();
 
+/* HISTORIAL */
+async function cargarHistorial(){
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+const cont=document.getElementById("listaHistorial");
+cont.innerHTML="";
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay compras todavía</p>";
+return;
+}
+data.forEach(i=>{
+cont.innerHTML+=`
+<div class="histItem">
+<b>${i.plan}</b><br>
+Precio: $${i.precio}<br>
+Ganancia diaria: $${i.ganancia}<br>
+${new Date(i.created_at).toLocaleString()}
+</div>`;
+});
+}
+cargarHistorial();
+
+/* RETIROS */
+async function cargarRetiros(){
+const { data } = await supabaseClient
+.from("retiros")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+const cont=document.getElementById("listaRetiros");
+cont.innerHTML="";
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay retiros todavía</p>";
+return;
+}
+data.forEach(r=>{
+cont.innerHTML+=`
+<div class="histItem">
+Monto: $${r.monto}<br>
+Banco: ${r.banco}<br>
+Estado: ${r.estado}<br>
+${new Date(r.created_at).toLocaleString()}
+</div>`;
+});
+}
+cargarRetiros();
+
+/* MENU */
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
