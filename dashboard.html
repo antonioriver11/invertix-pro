@@ -110,10 +110,49 @@ background:none;border:none;color:white;
 /* SECTIONS */
 .section{display:none;}
 .section.active{display:block;}
+
+/* MODAL */
+.modal{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,.6);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+.modalBox{
+background:#111827;
+padding:25px;
+border-radius:15px;
+width:85%;
+text-align:center;
+}
+
+.modalBox h2{color:#00ff88;margin-bottom:10px;}
+.modalBox button{
+margin-top:15px;
+padding:8px 15px;
+border:none;
+border-radius:6px;
+background:#00ff88;
+font-weight:bold;
+}
 </style>
 </head>
 
 <body>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+<div class="modalBox">
+<h2 id="modalTitulo"></h2>
+<p id="modalTexto"></p>
+<button onclick="cerrarModal()">Continuar</button>
+</div>
+</div>
 
 <!-- HEADER -->
 <div class="header">
@@ -176,7 +215,6 @@ background:none;border:none;color:white;
 
 <!-- RETIRO -->
 <div id="retiro" class="section">
-
 <div class="card">
 <h3>Solicitar retiro</h3>
 
@@ -202,7 +240,6 @@ background:none;border:none;color:white;
 <h3>Mis retiros</h3>
 <div id="listaRetiros"></div>
 </div>
-
 </div>
 
 <!-- MENU -->
@@ -226,6 +263,16 @@ if(!usuarioActivo) location.href="index.html";
 
 let usuarioData;
 
+/* MODAL */
+function mostrarModal(titulo,texto){
+document.getElementById("modalTitulo").textContent=titulo;
+document.getElementById("modalTexto").textContent=texto;
+document.getElementById("modal").style.display="flex";
+}
+function cerrarModal(){
+document.getElementById("modal").style.display="none";
+}
+
 /* CARGAR USUARIO */
 async function cargarUsuario(){
 const { data } = await supabaseClient
@@ -235,8 +282,12 @@ const { data } = await supabaseClient
 .single();
 
 usuarioData=data;
+
 document.getElementById("saldo").textContent="$"+data.saldo;
 document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" 👋";
+
+mostrarModal("🎉 Bienvenido a Invertix Pro",
+"Has recibido $10 de bono de bienvenida para comenzar.");
 }
 
 cargarUsuario();
@@ -245,7 +296,7 @@ cargarUsuario();
 async function comprar(precio,ganancia,plan){
 
 if(usuarioData.saldo < precio){
-alert("Saldo insuficiente");
+mostrarModal("Saldo insuficiente","No tienes saldo suficiente para comprar este plan.");
 return;
 }
 
@@ -258,7 +309,7 @@ await supabaseClient.from("usuarios")
 await supabaseClient.from("historial")
 .insert({usuario:usuarioActivo,plan,precio,ganancia});
 
-alert("Plan comprado");
+mostrarModal("Plan comprado","Tu inversión fue activada correctamente.");
 
 cargarUsuario();
 cargarHistorial();
@@ -303,48 +354,25 @@ let cuenta=document.getElementById("cuenta").value;
 let monto=Number(document.getElementById("montoRetiro").value);
 
 if(!banco || !nombre || !cuenta || !monto){
-alert("Completa todos los datos");
+mostrarModal("Error","Completa todos los datos.");
 return;
 }
 
 if(monto > usuarioData.saldo){
-alert("Saldo insuficiente");
+mostrarModal("Saldo insuficiente","No tienes saldo suficiente.");
 return;
 }
 
 let nuevoSaldo = usuarioData.saldo - monto;
 
-// DESCONTAR SALDO
-const { error: errSaldo } = await supabaseClient
-.from("usuarios")
+await supabaseClient.from("usuarios")
 .update({ saldo:nuevoSaldo })
 .eq("usuario",usuarioActivo);
 
-if(errSaldo){
-console.log("ERROR SALDO:", errSaldo);
-alert("Error al descontar saldo");
-return;
-}
+await supabaseClient.from("retiros")
+.insert([{usuario:usuarioActivo,monto,banco,nombre,cuenta,estado:"Pendiente"}]);
 
-// INSERTAR RETIRO
-const { error: errRetiro } = await supabaseClient
-.from("retiros")
-.insert([{
-usuario:usuarioActivo,
-monto:monto,
-banco:banco,
-nombre:nombre,
-cuenta:cuenta,
-estado:"Pendiente"
-}]);
-
-if(errRetiro){
-console.log("ERROR RETIRO:", errRetiro);
-alert("Error al guardar retiro");
-return;
-}
-
-alert("Retiro solicitado correctamente");
+mostrarModal("Retiro solicitado","Tu retiro fue enviado correctamente.");
 
 cargarUsuario();
 cargarRetiros();
@@ -397,4 +425,4 @@ location.href="index.html";
 </script>
 
 </body>
-</html>
+  </html>
