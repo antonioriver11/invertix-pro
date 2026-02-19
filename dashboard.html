@@ -240,8 +240,12 @@ usuarioData=data;
 document.getElementById("saldo").textContent="$"+data.saldo;
 document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" 👋";
 
-mostrarModal("🎉 Bienvenido a Invertix Pro",
-"Has recibido $10 de bono de bienvenida para comenzar.");
+if(!sessionStorage.getItem("bienvenidaMostrada")){
+mostrarModal(
+"🎉 Bienvenido a Invertix Pro",
+"Has recibido $10 de bono de bienvenida para comenzar."
+);
+sessionStorage.setItem("bienvenidaMostrada","si");
 }
 cargarUsuario();
 
