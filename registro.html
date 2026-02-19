@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invertix Pro - Registro</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI', sans-serif;
+}
+
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#0B1120,#111827,#0B1120);
+color:#EAEAEA;
+}
+
+.container{
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(15px);
+padding:40px;
+width:90%;
+max-width:400px;
+border-radius:20px;
+box-shadow:0 0 40px rgba(0,198,255,0.2);
+text-align:center;
+}
+
+.logo{
+font-size:50px;
+color:#00C6FF;
+margin-bottom:10px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:10px;
+background:rgba(255,255,255,0.1);
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:15px;
+border:none;
+border-radius:10px;
+background:#00FF88;
+font-weight:bold;
+cursor:pointer;
+}
+
+a{color:#00C6FF;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="logo">📈</div>
+<h2>Crear Cuenta</h2>
+
+<form id="registerForm">
+<input id="usuario" placeholder="Usuario" required>
+<input id="correo" type="email" placeholder="Correo" required>
+<input id="password" type="password" placeholder="Contraseña" required>
+<button>Registrarse</button>
+</form>
+
+<p>¿Ya tienes cuenta? <a href="index.html">Iniciar sesión</a></p>
+
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+"https://vntnciltzouiqkzzwuxy.supabase.co",
+"sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
+);
+
+document.getElementById("registerForm").addEventListener("submit", async (e)=>{
+e.preventDefault();
+
+const usuario = usuarioInput();
+const correo = correoInput();
+const password = passwordInput();
+
+if(!usuario || !correo || !password){
+alert("Completa todos los campos");
+return;
+}
+
+const { error } = await supabaseClient
+.from("usuarios")
+.insert([{ usuario, correo, password }]);
+
+if(error){
+alert("Error: " + error.message);
+}else{
+alert("Cuenta creada correctamente 🎉");
+window.location.href="index.html";
+}
+
+});
+
+function usuarioInput(){
+return document.getElementById("usuario").value.trim();
+}
+function correoInput(){
+return document.getElementById("correo").value.trim();
+}
+function passwordInput(){
+return document.getElementById("password").value.trim();
+}
+</script>
+
+</body>
+</html>

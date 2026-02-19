@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invertix Pro - Panel Admin</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<script>
+const admin = localStorage.getItem("adminActivo");
+if(!admin){
+location.href="index.html";
+}
+</script>
+
+<style>
+body{
+background:#0b1120;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+
+h1{
+text-align:center;
+margin-bottom:20px;
+}
+
+.card{
+background:#111827;
+padding:20px;
+border-radius:12px;
+max-width:400px;
+margin:auto;
+margin-bottom:25px;
+}
+
+input, button{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+}
+
+input{
+background:#1f2933;
+color:white;
+}
+
+button{
+background:#00ff88;
+font-weight:bold;
+cursor:pointer;
+}
+
+.result{
+margin-top:15px;
+font-size:14px;
+text-align:center;
+}
+
+.retiro{
+background:#1f2933;
+padding:15px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.aprobar{
+background:#00ff88;
+}
+
+.rechazar{
+background:#ff4d4d;
+color:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔐 Panel Admin</h1>
+
+<!-- ASIGNAR SALDO -->
+<div class="card">
+
+<input type="text" id="usuario" placeholder="Usuario del cliente">
+<input type="number" id="monto" placeholder="Monto a asignar">
+
+<button onclick="asignarSaldo()">Asignar Saldo</button>
+
+<div class="result" id="resultado"></div>
+
+</div>
+
+<!-- RETIROS -->
+<div class="card">
+
+<h3>Retiros Pendientes</h3>
+<div id="listaRetiros"></div>
+
+</div>
+
+<script>
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+"https://vntnciltzouiqkzzwuxy.supabase.co",
+"sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
+);
+
+// ======================
+// ASIGNAR SALDO
+// ======================
+async function asignarSaldo(){
+
+let usuario = document.getElementById("usuario").value.trim();
+let monto = Number(document.getElementById("monto").value);
+
+if(!usuario || monto <= 0){
+alert("Datos inválidos");
+return;
+}
+
+const { data, error } = await supabaseClient
+.from("usuarios")
+.select("*")
+.eq("usuario", usuario)
+.single();
+
+if(error){
+document.getElementById("resultado").innerText =
+"Usuario no encontrado ❌";
+return;
+}
+
+const { error: updateError } = await supabaseClient
+.from("usuarios")
+.update({ saldo: monto })
+.eq("usuario", usuario);
+
+if(updateError){
+document.getElementById("resultado").innerText =
+"Error al actualizar ❌";
+return;
+}
+
+document.getElementById("resultado").innerText =
+"Saldo actualizado correctamente ✅";
+
+}
+
+// ======================
+// CARGAR RETIROS
+// ======================
+async function cargarRetiros(){
+
+const { data } = await supabaseClient
+.from("retiros")
+.select("*")
+.eq("estado","Pendiente")
+.order("created_at",{ascending:false});
+
+const cont = document.getElementById("listaRetiros");
+cont.innerHTML = "";
+
+if(!data || data.length===0){
+cont.innerHTML = "<p>No hay retiros pendientes</p>";
+return;
+}
+
+data.forEach(r=>{
+cont.innerHTML += `
+<div class="retiro">
+<b>Usuario:</b> ${r.usuario}<br>
+<b>Monto:</b> $${r.monto}<br>
+<b>Banco:</b> ${r.banco}<br>
+<b>Cuenta:</b> ${r.cuenta}<br>
+<b>Nombre:</b> ${r.nombre}<br>
+<b>Estado:</b> ${r.estado}<br><br>
+
+<button class="aprobar" onclick="aprobarRetiro('${r.id}')">
+Aprobar
+</button>
+
+<button class="rechazar" onclick="rechazarRetiro('${r.id}')">
+Rechazar
+</button>
+</div>
+`;
+});
+}
+
+cargarRetiros();
+
+// ======================
+// APROBAR
+// ======================
+async function aprobarRetiro(id){
+
+await supabaseClient
+.from("retiros")
+.update({ estado:"Aprobado" })
+.eq("id",id);
+
+alert("Retiro aprobado ✅");
+cargarRetiros();
+}
+
+// ======================
+// RECHAZAR
+// ======================
+async function rechazarRetiro(id){
+
+await supabaseClient
+.from("retiros")
+.update({ estado:"Rechazado" })
+.eq("id",id);
+
+alert("Retiro rechazado ❌");
+cargarRetiros();
+}
+</script>
+
+</body>
+</html>

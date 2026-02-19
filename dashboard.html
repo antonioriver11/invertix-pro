@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invertix Pro</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+body{background:#0b1120;color:white;padding-bottom:80px;}
+
+.header{
+background:#111827;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.brandBox{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.logoAnimado{
+width:45px;
+animation:spin 4s linear infinite;
+}
+
+@keyframes spin{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
+}
+
+.brand{color:#00ff88;font-weight:bold;font-size:20px;}
+.brandFrase{font-size:14px;opacity:.8;}
+
+.logout{
+background:#ff4d4d;border:none;
+padding:8px 12px;border-radius:6px;color:white;
+}
+
+/* BIENVENIDA */
+#bienvenida{
+text-align:center;
+margin-top:10px;
+font-size:16px;
+}
+
+/* BALANCE */
+.balance{
+background:linear-gradient(135deg,#00c6ff,#0072ff);
+padding:25px;margin:15px;
+border-radius:18px;text-align:center;
+}
+
+.balance h1{font-size:38px;margin-top:10px;}
+
+/* CARD */
+.card{
+background:#1f2933;
+margin:15px;padding:15px;border-radius:14px;
+}
+
+/* PLAN */
+.plan{
+display:flex;align-items:center;gap:12px;margin-top:10px;
+}
+
+.plan img{
+width:55px;height:55px;border-radius:10px;background:white;
+}
+
+.buy{
+margin-left:auto;background:#00ff88;border:none;
+padding:8px 14px;border-radius:6px;font-weight:bold;
+cursor:pointer;
+}
+
+/* INPUTS */
+input,select{
+width:100%;
+padding:10px;
+border-radius:8px;border:none;
+margin-top:8px;
+background:#0f172a;color:white;
+}
+
+/* HIST ITEM */
+.histItem{
+background:#111827;
+padding:12px;border-radius:10px;margin-top:10px;
+}
+
+/* MENU */
+.menu{
+position:fixed;bottom:0;left:0;width:100%;
+background:#111827;
+display:flex;justify-content:space-around;
+padding:12px 0;
+}
+
+.menu button{
+background:none;border:none;color:white;
+}
+
+/* SECTIONS */
+.section{display:none;}
+.section.active{display:block;}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+<div class="brandBox">
+<img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="logoAnimado">
+<div>
+<div class="brand">Invertix Pro</div>
+<div class="brandFrase">Tu dinero creciendo todos los días 💰</div>
+</div>
+</div>
+<button class="logout" onclick="logout()">Salir</button>
+</div>
+
+<h3 id="bienvenida"></h3>
+
+<!-- SALDO -->
+<div class="balance">
+<p>Saldo disponible</p>
+<h1 id="saldo">$0</h1>
+</div>
+
+<!-- DASH -->
+<div id="dash" class="section active">
+<div class="card">
+<h3>Planes disponibles</h3>
+
+<div class="plan">
+<img src="plan1.jpg">
+<div><p>Starter</p><p>$25 → $5/día</p></div>
+<button class="buy" onclick="comprar(25,5,'Starter')">Comprar</button>
+</div>
+
+<div class="plan">
+<img src="plan2.jpg">
+<div><p>Growth</p><p>$50 → $7/día</p></div>
+<button class="buy" onclick="comprar(50,7,'Growth')">Comprar</button>
+</div>
+
+<div class="plan">
+<img src="plan3.jpg">
+<div><p>Pro</p><p>$75 → $10/día</p></div>
+<button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
+</div>
+
+<div class="plan">
+<img src="plan4.jpg">
+<div><p>Elite</p><p>$100 → $15/día</p></div>
+<button class="buy" onclick="comprar(100,15,'Elite')">Comprar</button>
+</div>
+</div>
+</div>
+
+<!-- HISTORIAL -->
+<div id="historial" class="section">
+<div class="card">
+<h3>Historial de compras</h3>
+<div id="listaHistorial"></div>
+</div>
+</div>
+
+<!-- RETIRO -->
+<div id="retiro" class="section">
+
+<div class="card">
+<h3>Solicitar retiro</h3>
+
+<select id="banco">
+<option value="">Selecciona banco</option>
+<option>Banco General</option>
+<option>Caja de Ahorros</option>
+<option>Banistmo</option>
+<option>Global Bank</option>
+<option>Multibank</option>
+<option>Credicorp Bank</option>
+<option>Scotiabank</option>
+</select>
+
+<input id="nombreTitular" placeholder="Nombre completo">
+<input id="cuenta" placeholder="Número de cuenta">
+<input id="montoRetiro" placeholder="Monto">
+
+<button class="buy" onclick="retirar()">Solicitar</button>
+</div>
+
+<div class="card">
+<h3>Mis retiros</h3>
+<div id="listaRetiros"></div>
+</div>
+
+</div>
+
+<!-- MENU -->
+<div class="menu">
+<button onclick="showSection('dash')">Dashboard</button>
+<button onclick="showSection('historial')">Historial</button>
+<button onclick="showSection('retiro')">Retiro</button>
+</div>
+
+<script>
+
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+"https://vntnciltzouiqkzzwuxy.supabase.co",
+"sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
+);
+
+const usuarioActivo = localStorage.getItem("usuarioActivo");
+if(!usuarioActivo) location.href="index.html";
+
+let usuarioData;
+
+/* CARGAR USUARIO */
+async function cargarUsuario(){
+const { data } = await supabaseClient
+.from("usuarios")
+.select("*")
+.eq("usuario",usuarioActivo)
+.single();
+
+usuarioData=data;
+document.getElementById("saldo").textContent="$"+data.saldo;
+document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" 👋";
+}
+
+cargarUsuario();
+
+/* COMPRAR */
+async function comprar(precio,ganancia,plan){
+
+if(usuarioData.saldo < precio){
+alert("Saldo insuficiente");
+return;
+}
+
+let nuevoSaldo = usuarioData.saldo - precio;
+
+await supabaseClient.from("usuarios")
+.update({ saldo:nuevoSaldo })
+.eq("usuario",usuarioActivo);
+
+await supabaseClient.from("historial")
+.insert({usuario:usuarioActivo,plan,precio,ganancia});
+
+alert("Plan comprado");
+
+cargarUsuario();
+cargarHistorial();
+}
+
+/* HISTORIAL */
+async function cargarHistorial(){
+
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+const cont = document.getElementById("listaHistorial");
+cont.innerHTML="";
+
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay compras todavía</p>";
+return;
+}
+
+data.forEach(i=>{
+cont.innerHTML+=`
+<div class="histItem">
+<b>${i.plan}</b><br>
+💲 Precio: $${i.precio}<br>
+📈 Ganancia diaria: $${i.ganancia}<br>
+📅 ${new Date(i.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+cargarHistorial();
+
+/* RETIRAR */
+async function retirar(){
+
+let banco=document.getElementById("banco").value;
+let nombre=document.getElementById("nombreTitular").value;
+let cuenta=document.getElementById("cuenta").value;
+let monto=Number(document.getElementById("montoRetiro").value);
+
+if(!banco || !nombre || !cuenta || !monto){
+alert("Completa todos los datos");
+return;
+}
+
+if(monto > usuarioData.saldo){
+alert("Saldo insuficiente");
+return;
+}
+
+let nuevoSaldo = usuarioData.saldo - monto;
+
+// DESCONTAR SALDO
+const { error: errSaldo } = await supabaseClient
+.from("usuarios")
+.update({ saldo:nuevoSaldo })
+.eq("usuario",usuarioActivo);
+
+if(errSaldo){
+console.log("ERROR SALDO:", errSaldo);
+alert("Error al descontar saldo");
+return;
+}
+
+// INSERTAR RETIRO
+const { error: errRetiro } = await supabaseClient
+.from("retiros")
+.insert([{
+usuario:usuarioActivo,
+monto:monto,
+banco:banco,
+nombre:nombre,
+cuenta:cuenta,
+estado:"Pendiente"
+}]);
+
+if(errRetiro){
+console.log("ERROR RETIRO:", errRetiro);
+alert("Error al guardar retiro");
+return;
+}
+
+alert("Retiro solicitado correctamente");
+
+cargarUsuario();
+cargarRetiros();
+}
+
+/* CARGAR RETIROS */
+async function cargarRetiros(){
+
+const { data } = await supabaseClient
+.from("retiros")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+const cont=document.getElementById("listaRetiros");
+cont.innerHTML="";
+
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay retiros todavía</p>";
+return;
+}
+
+data.forEach(r=>{
+cont.innerHTML+=`
+<div class="histItem">
+💸 Monto: $${r.monto}<br>
+Banco: ${r.banco}<br>
+Cuenta: ${r.cuenta}<br>
+Estado: <b>${r.estado}</b><br>
+${new Date(r.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+cargarRetiros();
+
+/* MENU */
+function showSection(id){
+document.querySelectorAll(".section")
+.forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+}
+
+/* LOGOUT */
+function logout(){
+localStorage.removeItem("usuarioActivo");
+location.href="index.html";
+}
+
+</script>
+
+</body>
+</html>
