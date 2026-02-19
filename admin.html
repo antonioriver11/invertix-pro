@@ -92,9 +92,6 @@ color:white;
 <button onclick="asignarSaldo()">Asignar Saldo</button>
 
 <div class="result" id="resultado"></div>
-<button onclick="recargarPagina()" style="background:#00c6ff;">
-🔄 Reiniciar Panel
-</button>
 </div>
 
 <!-- RETIROS -->
@@ -223,10 +220,6 @@ await supabaseClient
 
 alert("Retiro rechazado ❌");
 cargarRetiros();
-}
-</script>
-function recargarPagina(){
-location.reload();
 }
 </body>
 </html>
