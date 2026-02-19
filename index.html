@@ -3,87 +3,197 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invertix Pro - Login</title>
+<title>Invertix Pro</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
 <style>
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Segoe UI',sans-serif;
-}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 
 body{
 min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-background:linear-gradient(135deg,#0B1120,#111827,#0B1120);
-color:#EAEAEA;
-}
-
-.container{
-background:rgba(255,255,255,0.05);
-backdrop-filter:blur(15px);
-padding:40px;
-width:90%;
-max-width:400px;
-border-radius:20px;
-box-shadow:0 0 40px rgba(0,198,255,0.2);
-text-align:center;
-}
-
-.logo{
-font-size:50px;
-color:#00C6FF;
-margin-bottom:10px;
-}
-
-input{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:none;
-border-radius:10px;
-background:rgba(255,255,255,0.1);
+background:linear-gradient(135deg,#020617,#020617,#020617);
+overflow:hidden;
 color:white;
 }
 
+/* Fondo animado */
+body::before{
+content:"";
+position:absolute;
+width:200%;
+height:200%;
+background:radial-gradient(circle,#00c6ff33 0%,transparent 60%);
+animation:mover 12s infinite alternate;
+}
+
+@keyframes mover{
+from{transform:translate(-20%,-20%);}
+to{transform:translate(20%,20%);}
+}
+
+/* Card */
+.loginBox{
+position:relative;
+background:rgba(15,23,42,.85);
+backdrop-filter:blur(10px);
+padding:35px;
+width:340px;
+border-radius:20px;
+box-shadow:0 0 25px #00c6ff44;
+text-align:center;
+z-index:1;
+}
+
+.logo{
+width:80px;
+margin-bottom:10px;
+}
+
+h1{
+margin-bottom:20px;
+color:#00ff88;
+}
+
+/* Inputs */
+.inputBox{
+display:flex;
+align-items:center;
+background:#0f172a;
+margin:12px 0;
+border-radius:10px;
+padding:12px;
+}
+
+.inputBox i{
+margin-right:10px;
+color:#00c6ff;
+}
+
+.inputBox input{
+background:none;
+border:none;
+outline:none;
+color:white;
+width:100%;
+font-size:15px;
+}
+
+/* Botón */
 button{
 width:100%;
 padding:12px;
 margin-top:15px;
+background:linear-gradient(135deg,#00c6ff,#0072ff);
 border:none;
 border-radius:10px;
-background:#00C6FF;
+color:white;
+font-size:16px;
 font-weight:bold;
 cursor:pointer;
+transition:.3s;
 }
 
-a{color:#00C6FF;}
+button:hover{
+transform:scale(1.03);
+box-shadow:0 0 10px #00c6ff;
+}
+
+.links{
+margin-top:15px;
+font-size:14px;
+}
+
+.links a{
+color:#00c6ff;
+text-decoration:none;
+display:block;
+margin-top:6px;
+}
+
+/* Modal */
+.modal{
+position:fixed;
+top:0;left:0;
+width:100%;height:100%;
+background:rgba(0,0,0,.6);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+.modalBox{
+background:#111827;
+padding:25px;
+border-radius:15px;
+width:85%;
+max-width:300px;
+text-align:center;
+}
+
+.modalBox input{
+width:100%;
+padding:10px;
+border:none;
+border-radius:8px;
+margin-top:10px;
+background:#0f172a;
+color:white;
+}
+
+.modalBox button{
+margin-top:12px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- MODAL RECUPERAR -->
+<div class="modal" id="modalRecuperar">
+<div class="modalBox">
+<h3>Restablecer contraseña</h3>
+<input id="correoRecuperar" placeholder="Correo registrado">
+<button onclick="enviarRecuperacion()">Enviar enlace</button>
+<button onclick="cerrarModal()">Cancelar</button>
+</div>
+</div>
 
-<div class="logo">📈</div>
-<h2>Invertix Pro</h2>
+<div class="loginBox">
 
-<form id="loginForm">
-<input id="usuario" placeholder="Usuario" required>
-<input id="password" type="password" placeholder="Contraseña" required>
-<button>Ingresar</button>
-</form>
+<img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="logo">
 
-<p>¿No tienes cuenta? <a href="registro.html">Crear cuenta</a></p>
+<h1>Invertix Pro</h1>
+
+<div class="inputBox">
+<i class="fa fa-user"></i>
+<input id="usuario" placeholder="Usuario">
+</div>
+
+<div class="inputBox">
+<i class="fa fa-lock"></i>
+<input id="clave" type="password" placeholder="Contraseña">
+</div>
+
+<button onclick="login()">Ingresar</button>
+
+<div class="links">
+<a href="registro.html">Crear cuenta</a>
+<a href="#" onclick="abrirModal()">¿Olvidaste tu contraseña?</a>
+</div>
 
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
 <script>
+
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -91,13 +201,13 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-document.getElementById("loginForm").addEventListener("submit", async (e)=>{
-e.preventDefault();
+/* LOGIN */
+async function login(){
 
-const usuario = document.getElementById("usuario").value.trim();
-const password = document.getElementById("password").value.trim();
+let usuario=document.getElementById("usuario").value;
+let clave=document.getElementById("clave").value;
 
-if(!usuario || !password){
+if(!usuario || !clave){
 alert("Completa todos los campos");
 return;
 }
@@ -105,27 +215,53 @@ return;
 const { data, error } = await supabaseClient
 .from("usuarios")
 .select("*")
-.eq("usuario", usuario)
-.eq("password", password)
+.eq("usuario",usuario)
+.eq("clave",clave)
 .single();
 
-if(error || !data){
+if(error){
 alert("Usuario o contraseña incorrectos");
 return;
 }
 
-/* 🔐 ADMIN */
-if(usuario === "adminalvin"){
-localStorage.setItem("adminActivo", usuario);
-window.location.href="admin.html";
+localStorage.setItem("usuarioActivo",usuario);
+location.href="dashboard.html";
+}
+
+/* MODAL */
+function abrirModal(){
+document.getElementById("modalRecuperar").style.display="flex";
+}
+
+function cerrarModal(){
+document.getElementById("modalRecuperar").style.display="none";
+}
+
+/* RECUPERAR */
+async function enviarRecuperacion(){
+
+let correo=document.getElementById("correoRecuperar").value;
+
+if(!correo){
+alert("Escribe tu correo");
 return;
 }
 
-/* 👤 USUARIO NORMAL */
-localStorage.setItem("usuarioActivo", usuario);
-window.location.href="dashboard.html";
+const { data, error } = await supabaseClient
+.from("usuarios")
+.select("*")
+.eq("correo",correo)
+.single();
 
-});
+if(error){
+alert("Correo no encontrado");
+return;
+}
+
+alert("Tu contraseña es: "+data.clave);
+cerrarModal();
+}
+
 </script>
 
 </body>
