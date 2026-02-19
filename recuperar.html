@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recuperar contraseña</title>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#0B1120,#111827,#0B1120);
+font-family:'Segoe UI',sans-serif;
+color:white;
+}
+
+.card{
+background:rgba(255,255,255,0.05);
+padding:35px;
+width:90%;
+max-width:400px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 0 40px rgba(0,198,255,.2);
+}
+
+input{
+width:100%;
+padding:12px;
+margin-top:15px;
+border:none;
+border-radius:10px;
+background:rgba(255,255,255,.1);
+color:white;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:20px;
+border:none;
+border-radius:10px;
+background:#00C6FF;
+font-weight:bold;
+cursor:pointer;
+}
+
+a{color:#00C6FF;}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+<h2>🔐 Recuperar contraseña</h2>
+
+<input id="usuario" placeholder="Ingresa tu usuario">
+
+<button onclick="buscarUsuario()">Continuar</button>
+
+<p style="margin-top:15px">
+<a href="index.html">Volver al login</a>
+</p>
+</div>
+
+<script>
+
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+"https://vntnciltzouiqkzzwuxy.supabase.co",
+"sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
+);
+
+async function buscarUsuario(){
+
+const usuario = document.getElementById("usuario").value.trim();
+
+if(!usuario){
+alert("Escribe tu usuario");
+return;
+}
+
+const { data, error } = await supabaseClient
+.from("usuarios")
+.select("usuario")
+.eq("usuario",usuario)
+.single();
+
+if(error || !data){
+alert("Usuario no encontrado");
+return;
+}
+
+localStorage.setItem("recuperarUsuario",usuario);
+location.href="nueva_password.html";
+
+}
+
+</script>
+
+</body>
+</html>
