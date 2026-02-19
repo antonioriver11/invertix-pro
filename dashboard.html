@@ -9,7 +9,7 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-body{background:#0b1120;color:white;padding-bottom:80px;}
+body{background:#0b1120;color:white;padding-bottom:90px;}
 
 .header{
 background:#111827;
@@ -44,39 +44,29 @@ padding:8px 12px;border-radius:6px;color:white;
 }
 
 /* BIENVENIDA */
-#bienvenida{
-text-align:center;
-margin-top:10px;
-font-size:16px;
-}
+#bienvenida{text-align:center;margin-top:10px;font-size:16px;}
 
 /* BALANCE */
 .balance{
 background:linear-gradient(135deg,#00c6ff,#0072ff);
-padding:25px;margin:15px;
-border-radius:18px;text-align:center;
+padding:25px;margin:15px;border-radius:18px;text-align:center;
 }
-
 .balance h1{font-size:38px;margin-top:10px;}
 
 /* CARD */
-.card{
-background:#1f2933;
-margin:15px;padding:15px;border-radius:14px;
-}
+.card{background:#1f2933;margin:15px;padding:15px;border-radius:14px;}
 
 /* PLAN */
-.plan{
-display:flex;align-items:center;gap:12px;margin-top:10px;
-}
-
-.plan img{
-width:55px;height:55px;border-radius:10px;background:white;
-}
+.plan{display:flex;align-items:center;gap:12px;margin-top:10px;}
+.plan img{width:55px;height:55px;border-radius:10px;background:white;}
 
 .buy{
-margin-left:auto;background:#00ff88;border:none;
-padding:8px 14px;border-radius:6px;font-weight:bold;
+margin-left:auto;
+background:#00ff88;
+border:none;
+padding:8px 14px;
+border-radius:6px;
+font-weight:bold;
 cursor:pointer;
 }
 
@@ -84,27 +74,38 @@ cursor:pointer;
 input,select{
 width:100%;
 padding:10px;
-border-radius:8px;border:none;
+border-radius:8px;
+border:none;
 margin-top:8px;
-background:#0f172a;color:white;
+background:#0f172a;
+color:white;
 }
 
 /* HIST ITEM */
 .histItem{
 background:#111827;
-padding:12px;border-radius:10px;margin-top:10px;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
 }
 
 /* MENU */
 .menu{
-position:fixed;bottom:0;left:0;width:100%;
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
 background:#111827;
-display:flex;justify-content:space-around;
+display:flex;
+justify-content:space-around;
 padding:12px 0;
 }
 
 .menu button{
-background:none;border:none;color:white;
+background:none;
+border:none;
+color:white;
+font-size:14px;
 }
 
 /* SECTIONS */
@@ -174,7 +175,7 @@ font-weight:bold;
 <h1 id="saldo">$0</h1>
 </div>
 
-<!-- DASH -->
+<!-- DASHBOARD -->
 <div id="dash" class="section active">
 <div class="card">
 <h3>Planes disponibles</h3>
@@ -196,7 +197,10 @@ font-weight:bold;
 <div><p>Pro</p><p>$75 → $10/día</p></div>
 <button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
 </div>
-  
+
+</div>
+</div>
+
 <!-- HISTORIAL -->
 <div id="historial" class="section">
 <div class="card">
@@ -213,12 +217,8 @@ font-weight:bold;
 <select id="banco">
 <option value="">Selecciona banco</option>
 <option>Banco General</option>
-<option>Caja de Ahorros</option>
 <option>Banistmo</option>
-<option>Global Bank</option>
-<option>Multibank</option>
-<option>Credicorp Bank</option>
-<option>Scotiabank</option>
+<option>Caja de Ahorros</option>
 </select>
 
 <input id="nombreTitular" placeholder="Nombre completo">
@@ -231,6 +231,29 @@ font-weight:bold;
 <div class="card">
 <h3>Mis retiros</h3>
 <div id="listaRetiros"></div>
+</div>
+</div>
+
+<!-- RECARGAR -->
+<div id="recargar" class="section">
+<div class="card">
+<h3>Recargar saldo</h3>
+
+<select id="metodoRecarga">
+<option value="">Selecciona método</option>
+<option>Transferencia bancaria</option>
+<option>ACH Express</option>
+</select>
+
+<input id="montoRecarga" placeholder="Monto">
+<input id="referenciaRecarga" placeholder="Referencia / comprobante">
+
+<button class="buy" onclick="recargarSaldo()">Enviar solicitud</button>
+</div>
+
+<div class="card">
+<h3>Mis recargas</h3>
+<div id="listaRecargas"></div>
 </div>
 </div>
 
@@ -258,13 +281,11 @@ let usuarioData;
 
 /* MODAL */
 function mostrarModal(titulo,texto){
-document.getElementById("modalTitulo").textContent=titulo;
-document.getElementById("modalTexto").textContent=texto;
-document.getElementById("modal").style.display="flex";
+modalTitulo.textContent=titulo;
+modalTexto.textContent=texto;
+modal.style.display="flex";
 }
-function cerrarModal(){
-document.getElementById("modal").style.display="none";
-}
+function cerrarModal(){modal.style.display="none";}
 
 /* CARGAR USUARIO */
 async function cargarUsuario(){
@@ -275,132 +296,104 @@ const { data } = await supabaseClient
 .single();
 
 usuarioData=data;
-
-document.getElementById("saldo").textContent="$"+data.saldo;
-document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" 👋";
-
-mostrarModal("🎉 Bienvenido a Invertix Pro",
-"Has recibido $10 de bono de bienvenida para comenzar.");
+saldo.textContent="$"+data.saldo;
+bienvenida.textContent="Bienvenido "+data.usuario+" 👋";
 }
-
 cargarUsuario();
 
 /* COMPRAR */
 async function comprar(precio,ganancia,plan){
 
 if(usuarioData.saldo < precio){
-mostrarModal("Saldo insuficiente","No tienes saldo suficiente para comprar este plan.");
+mostrarModal("Saldo insuficiente","No tienes saldo suficiente.");
 return;
 }
 
-let nuevoSaldo = usuarioData.saldo - precio;
-
 await supabaseClient.from("usuarios")
-.update({ saldo:nuevoSaldo })
+.update({ saldo: usuarioData.saldo - precio })
 .eq("usuario",usuarioActivo);
 
 await supabaseClient.from("historial")
 .insert({usuario:usuarioActivo,plan,precio,ganancia});
 
-mostrarModal("Plan comprado","Tu inversión fue activada correctamente.");
-
+mostrarModal("Éxito","Plan comprado.");
 cargarUsuario();
 cargarHistorial();
 }
 
 /* HISTORIAL */
 async function cargarHistorial(){
-
 const { data } = await supabaseClient
 .from("historial")
 .select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
+.eq("usuario",usuarioActivo);
 
-const cont = document.getElementById("listaHistorial");
-cont.innerHTML="";
-
-if(!data || data.length===0){
-cont.innerHTML="<p>No hay compras todavía</p>";
-return;
-}
-
-data.forEach(i=>{
-cont.innerHTML+=`
+listaHistorial.innerHTML="";
+data?.forEach(i=>{
+listaHistorial.innerHTML+=`
 <div class="histItem">
-<b>${i.plan}</b><br>
-💲 Precio: $${i.precio}<br>
-📈 Ganancia diaria: $${i.ganancia}<br>
-📅 ${new Date(i.created_at).toLocaleString()}
+${i.plan} - $${i.precio}
 </div>`;
 });
 }
-
 cargarHistorial();
 
 /* RETIRAR */
 async function retirar(){
 
-let banco=document.getElementById("banco").value;
-let nombre=document.getElementById("nombreTitular").value;
-let cuenta=document.getElementById("cuenta").value;
-let monto=Number(document.getElementById("montoRetiro").value);
-
-if(!banco || !nombre || !cuenta || !monto){
-mostrarModal("Error","Completa todos los datos.");
-return;
-}
+let monto = Number(montoRetiro.value);
 
 if(monto > usuarioData.saldo){
-mostrarModal("Saldo insuficiente","No tienes saldo suficiente.");
+mostrarModal("Error","Saldo insuficiente.");
 return;
 }
 
-let nuevoSaldo = usuarioData.saldo - monto;
-
 await supabaseClient.from("usuarios")
-.update({ saldo:nuevoSaldo })
+.update({ saldo: usuarioData.saldo - monto })
 .eq("usuario",usuarioActivo);
 
 await supabaseClient.from("retiros")
-.insert([{usuario:usuarioActivo,monto,banco,nombre,cuenta,estado:"Pendiente"}]);
+.insert({usuario:usuarioActivo,monto,estado:"Pendiente"});
 
-mostrarModal("Retiro solicitado","Tu retiro fue enviado correctamente.");
-
+mostrarModal("Listo","Retiro solicitado.");
 cargarUsuario();
 cargarRetiros();
 }
 
 /* CARGAR RETIROS */
 async function cargarRetiros(){
-
 const { data } = await supabaseClient
 .from("retiros")
 .select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
+.eq("usuario",usuarioActivo);
 
-const cont=document.getElementById("listaRetiros");
-cont.innerHTML="";
-
-if(!data || data.length===0){
-cont.innerHTML="<p>No hay retiros todavía</p>";
-return;
-}
-
-data.forEach(r=>{
-cont.innerHTML+=`
+listaRetiros.innerHTML="";
+data?.forEach(r=>{
+listaRetiros.innerHTML+=`
 <div class="histItem">
-💸 Monto: $${r.monto}<br>
-Banco: ${r.banco}<br>
-Cuenta: ${r.cuenta}<br>
-Estado: <b>${r.estado}</b><br>
-${new Date(r.created_at).toLocaleString()}
+$${r.monto} - ${r.estado}
 </div>`;
 });
 }
-
 cargarRetiros();
+
+/* RECARGAR */
+async function recargarSaldo(){
+
+let metodo=metodoRecarga.value;
+let monto=Number(montoRecarga.value);
+let ref=referenciaRecarga.value;
+
+if(!metodo||!monto||!ref){
+mostrarModal("Error","Completa todo.");
+return;
+}
+
+await supabaseClient.from("recargas")
+.insert({usuario:usuarioActivo,monto,metodo,referencia:ref,estado:"Pendiente"});
+
+mostrarModal("Enviado","Recarga en revisión.");
+}
 
 /* MENU */
 function showSection(id){
