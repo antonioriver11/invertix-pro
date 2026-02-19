@@ -68,9 +68,9 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 
 <body>
 
-<!-- 🔊 SONIDOS -->
-<audio id="soundCash" src="https://assets.mixkit.co/sfx/preview/mixkit-cash-register-purchase-873.mp3"></audio>
-<audio id="soundClick" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
+<!-- SONIDOS -->
+<audio id="cashSound" src="https://assets.mixkit.co/sfx/preview/mixkit-cash-register-purchase-2759.mp3"></audio>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3"></audio>
 
 <!-- MODAL -->
 <div id="modal" class="modal">
@@ -81,6 +81,7 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 </div>
 
+<!-- HEADER -->
 <div class="header">
 <div class="brandBox">
 <img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="logoAnimado">
@@ -89,7 +90,7 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="brandFrase">Tu dinero creciendo todos los días 💰</div>
 </div>
 </div>
-<button class="logout" onclick="playClick();logout()">Salir</button>
+<button class="logout" onclick="logout()">Salir</button>
 </div>
 
 <h3 id="bienvenida"></h3>
@@ -107,25 +108,25 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <div class="plan">
 <img src="plan1.jpg">
 <div><p>Starter</p><p>$25 → $5/día</p></div>
-<button class="buy" onclick="playClick();comprar(25,5,'Starter')">Comprar</button>
+<button class="buy" onclick="comprar(25,5,'Starter')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan2.jpg">
 <div><p>Growth</p><p>$50 → $7/día</p></div>
-<button class="buy" onclick="playClick();comprar(50,7,'Growth')">Comprar</button>
+<button class="buy" onclick="comprar(50,7,'Growth')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan3.jpg">
 <div><p>Pro</p><p>$75 → $10/día</p></div>
-<button class="buy" onclick="playClick();comprar(75,10,'Pro')">Comprar</button>
+<button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
 </div>
 
 <div class="plan">
 <img src="plan4.jpg">
 <div><p>Elite</p><p>$100 → $15/día</p></div>
-<button class="buy" onclick="playClick();comprar(100,15,'Elite')">Comprar</button>
+<button class="buy" onclick="comprar(100,15,'Elite')">Comprar</button>
 </div>
 
 </div>
@@ -134,13 +135,14 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <!-- HISTORIAL -->
 <div id="historial" class="section">
 <div class="card">
-<h3>Historial</h3>
+<h3>Historial de compras</h3>
 <div id="listaHistorial"></div>
 </div>
 </div>
 
-<!-- RETIROS -->
+<!-- RETIRO -->
 <div id="retiro" class="section">
+
 <div class="card">
 <h3>Solicitar retiro</h3>
 
@@ -159,30 +161,24 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <input id="cuenta" placeholder="Número de cuenta">
 <input id="montoRetiro" placeholder="Monto">
 
-<button class="buy" onclick="playClick();retirar()">Solicitar</button>
+<button class="buy" onclick="retirar()">Solicitar</button>
 </div>
 
 <div class="card">
 <h3>Mis retiros</h3>
 <div id="listaRetiros"></div>
 </div>
+
 </div>
 
+<!-- MENU -->
 <div class="menu">
-<button onclick="playClick();showSection('dash')">Dashboard</button>
-<button onclick="playClick();showSection('historial')">Historial</button>
-<button onclick="playClick();showSection('retiro')">Retiro</button>
+<button onclick="showSection('dash')">Dashboard</button>
+<button onclick="showSection('historial')">Historial</button>
+<button onclick="showSection('retiro')">Retiro</button>
 </div>
 
 <script>
-
-function playCash(){
-document.getElementById("soundCash").play();
-}
-
-function playClick(){
-document.getElementById("soundClick").play();
-}
 
 const { createClient } = supabase;
 
@@ -196,8 +192,22 @@ if(!usuarioActivo) location.href="index.html";
 
 let usuarioData;
 
+const cashSound=document.getElementById("cashSound");
+const clickSound=document.getElementById("clickSound");
+
+/* MODAL */
+function mostrarModal(titulo,texto){
+document.getElementById("modalTitulo").textContent=titulo;
+document.getElementById("modalTexto").textContent=texto;
+document.getElementById("modal").style.display="flex";
+}
+function cerrarModal(){
+document.getElementById("modal").style.display="none";
+}
+
 /* CARGAR USUARIO */
 async function cargarUsuario(){
+
 const { data } = await supabaseClient
 .from("usuarios")
 .select("*")
@@ -208,6 +218,13 @@ usuarioData=data;
 
 document.getElementById("saldo").textContent="$"+data.saldo;
 document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" 👋";
+
+// SOLO UNA VEZ
+if(!localStorage.getItem("bonoMostrado")){
+mostrarModal("🎁 Bono de bienvenida","Has recibido $10 para comenzar.");
+localStorage.setItem("bonoMostrado","si");
+}
+
 }
 
 cargarUsuario();
@@ -220,6 +237,8 @@ mostrarModal("Saldo insuficiente","No tienes saldo suficiente.");
 return;
 }
 
+cashSound.play();
+
 let nuevoSaldo = usuarioData.saldo - precio;
 
 await supabaseClient.from("usuarios")
@@ -229,77 +248,138 @@ await supabaseClient.from("usuarios")
 await supabaseClient.from("historial")
 .insert({usuario:usuarioActivo,plan,precio,ganancia});
 
-playCash();
-mostrarModal("Plan comprado","Inversión activada.");
+mostrarModal("Compra exitosa","Plan activado correctamente.");
 
 cargarUsuario();
 cargarHistorial();
 }
 
+/* HISTORIAL */
+async function cargarHistorial(){
+
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+const cont=document.getElementById("listaHistorial");
+cont.innerHTML="";
+
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay compras todavía</p>";
+return;
+}
+
+data.forEach(i=>{
+cont.innerHTML+=`
+<div class="histItem">
+<b>${i.plan}</b><br>
+Precio: $${i.precio}<br>
+Ganancia diaria: $${i.ganancia}<br>
+${new Date(i.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+cargarHistorial();
+
 /* RETIRAR */
 async function retirar(){
 
-let monto = Number(document.getElementById("montoRetiro").value);
-if(monto > usuarioData.saldo){
+let banco=bancoInput();
+let nombre=nombreInput();
+let cuenta=cuentaInput();
+let monto=montoInput();
+
+if(!banco || !nombre || !cuenta || !monto){
+mostrarModal("Error","Completa todos los datos.");
+return;
+}
+
+if(monto>usuarioData.saldo){
 mostrarModal("Saldo insuficiente","No tienes saldo suficiente.");
 return;
 }
 
-await supabaseClient.from("retiros")
-.insert({usuario:usuarioActivo,monto,estado:"Pendiente"});
+cashSound.play();
+
+let nuevoSaldo=usuarioData.saldo-monto;
 
 await supabaseClient.from("usuarios")
-.update({ saldo: usuarioData.saldo - monto })
+.update({saldo:nuevoSaldo})
 .eq("usuario",usuarioActivo);
 
-playCash();
-mostrarModal("Retiro enviado","En proceso.");
+await supabaseClient.from("retiros")
+.insert([{usuario:usuarioActivo,monto,banco,nombre,cuenta,estado:"Pendiente"}]);
+
+mostrarModal("Retiro enviado","Tu retiro está en revisión.");
 
 cargarUsuario();
 cargarRetiros();
 }
 
-/* HISTORIAL */
-async function cargarHistorial(){
-const { data } = await supabaseClient
-.from("historial")
-.select("*")
-.eq("usuario",usuarioActivo);
-
-document.getElementById("listaHistorial").innerHTML =
-data.length? data.map(i=>`<div class="histItem">${i.plan} - $${i.precio}</div>`).join("") :
-"No hay historial";
-}
+function bancoInput(){return document.getElementById("banco").value;}
+function nombreInput(){return document.getElementById("nombreTitular").value;}
+function cuentaInput(){return document.getElementById("cuenta").value;}
+function montoInput(){return Number(document.getElementById("montoRetiro").value);}
 
 /* RETIROS */
 async function cargarRetiros(){
+
 const { data } = await supabaseClient
 .from("retiros")
 .select("*")
-.eq("usuario",usuarioActivo);
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
 
-document.getElementById("listaRetiros").innerHTML =
-data.length? data.map(r=>`<div class="histItem">$${r.monto} - ${r.estado}</div>`).join("") :
-"No hay retiros";
+const cont=document.getElementById("listaRetiros");
+cont.innerHTML="";
+
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay retiros todavía</p>";
+return;
 }
 
+data.forEach(r=>{
+cont.innerHTML+=`
+<div class="histItem">
+Monto: $${r.monto}<br>
+Banco: ${r.banco}<br>
+Estado: ${r.estado}<br>
+${new Date(r.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+cargarRetiros();
+
+/* AUTO REFRESCO 60s */
+let tiempo=0;
+setInterval(()=>{
+tiempo++;
+if(tiempo>=60){
+cargarUsuario();
+cargarHistorial();
+cargarRetiros();
+tiempo=0;
+}
+},1000);
+
+document.addEventListener("mousemove",()=>tiempo=0);
+document.addEventListener("click",()=>tiempo=0);
+
+/* MENU */
 function showSection(id){
+clickSound.play();
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
 
-function mostrarModal(t,t2){
-document.getElementById("modalTitulo").innerText=t;
-document.getElementById("modalTexto").innerText=t2;
-document.getElementById("modal").style.display="flex";
-}
-
-function cerrarModal(){
-document.getElementById("modal").style.display="none";
-}
-
+/* LOGOUT */
 function logout(){
 localStorage.removeItem("usuarioActivo");
+localStorage.removeItem("bonoMostrado");
 location.href="index.html";
 }
 
