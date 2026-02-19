@@ -43,14 +43,8 @@ background:#ff4d4d;border:none;
 padding:8px 12px;border-radius:6px;color:white;
 }
 
-/* BIENVENIDA */
-#bienvenida{
-text-align:center;
-margin-top:10px;
-font-size:16px;
-}
+#bienvenida{text-align:center;margin-top:10px;font-size:16px;}
 
-/* BALANCE */
 .balance{
 background:linear-gradient(135deg,#00c6ff,#0072ff);
 padding:25px;margin:15px;
@@ -59,20 +53,10 @@ border-radius:18px;text-align:center;
 
 .balance h1{font-size:38px;margin-top:10px;}
 
-/* CARD */
-.card{
-background:#1f2933;
-margin:15px;padding:15px;border-radius:14px;
-}
+.card{background:#1f2933;margin:15px;padding:15px;border-radius:14px;}
 
-/* PLAN */
-.plan{
-display:flex;align-items:center;gap:12px;margin-top:10px;
-}
-
-.plan img{
-width:55px;height:55px;border-radius:10px;background:white;
-}
+.plan{display:flex;align-items:center;gap:12px;margin-top:10px;}
+.plan img{width:55px;height:55px;border-radius:10px;background:white;}
 
 .buy{
 margin-left:auto;background:#00ff88;border:none;
@@ -80,22 +64,17 @@ padding:8px 14px;border-radius:6px;font-weight:bold;
 cursor:pointer;
 }
 
-/* INPUTS */
 input,select{
 width:100%;
-padding:10px;
-border-radius:8px;border:none;
-margin-top:8px;
-background:#0f172a;color:white;
+padding:10px;border-radius:8px;border:none;
+margin-top:8px;background:#0f172a;color:white;
 }
 
-/* HIST ITEM */
 .histItem{
-background:#111827;
-padding:12px;border-radius:10px;margin-top:10px;
+background:#111827;padding:12px;
+border-radius:10px;margin-top:10px;
 }
 
-/* MENU */
 .menu{
 position:fixed;bottom:0;left:0;width:100%;
 background:#111827;
@@ -103,49 +82,32 @@ display:flex;justify-content:space-around;
 padding:12px 0;
 }
 
-.menu button{
-background:none;border:none;color:white;
-}
+.menu button{background:none;border:none;color:white;}
 
-/* SECTIONS */
 .section{display:none;}
 .section.active{display:block;}
 
-/* MODAL */
 .modal{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
+position:fixed;top:0;left:0;width:100%;height:100%;
 background:rgba(0,0,0,.6);
-display:none;
-align-items:center;
-justify-content:center;
-z-index:999;
+display:none;align-items:center;justify-content:center;z-index:999;
 }
 
 .modalBox{
-background:#111827;
-padding:25px;
-border-radius:15px;
-width:85%;
-text-align:center;
+background:#111827;padding:25px;border-radius:15px;
+width:85%;text-align:center;
 }
 
 .modalBox h2{color:#00ff88;margin-bottom:10px;}
 .modalBox button{
-margin-top:15px;
-padding:8px 15px;
-border:none;
-border-radius:6px;
-background:#00ff88;
-font-weight:bold;
+margin-top:15px;padding:8px 15px;border:none;
+border-radius:6px;background:#00ff88;font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<!-- MODAL -->
 <div id="modal" class="modal">
 <div class="modalBox">
 <h2 id="modalTitulo"></h2>
@@ -154,7 +116,6 @@ font-weight:bold;
 </div>
 </div>
 
-<!-- HEADER -->
 <div class="header">
 <div class="brandBox">
 <img src="https://cdn-icons-png.flaticon.com/512/2331/2331941.png" class="logoAnimado">
@@ -168,13 +129,11 @@ font-weight:bold;
 
 <h3 id="bienvenida"></h3>
 
-<!-- SALDO -->
 <div class="balance">
 <p>Saldo disponible</p>
 <h1 id="saldo">$0</h1>
 </div>
 
-<!-- DASH -->
 <div id="dash" class="section active">
 <div class="card">
 <h3>Planes disponibles</h3>
@@ -205,7 +164,6 @@ font-weight:bold;
 </div>
 </div>
 
-<!-- HISTORIAL -->
 <div id="historial" class="section">
 <div class="card">
 <h3>Historial de compras</h3>
@@ -213,7 +171,6 @@ font-weight:bold;
 </div>
 </div>
 
-<!-- RETIRO -->
 <div id="retiro" class="section">
 <div class="card">
 <h3>Solicitar retiro</h3>
@@ -242,7 +199,6 @@ font-weight:bold;
 </div>
 </div>
 
-<!-- MENU -->
 <div class="menu">
 <button onclick="showSection('dash')">Dashboard</button>
 <button onclick="showSection('historial')">Historial</button>
@@ -263,7 +219,6 @@ if(!usuarioActivo) location.href="index.html";
 
 let usuarioData;
 
-/* MODAL */
 function mostrarModal(titulo,texto){
 document.getElementById("modalTitulo").textContent=titulo;
 document.getElementById("modalTexto").textContent=texto;
@@ -273,7 +228,6 @@ function cerrarModal(){
 document.getElementById("modal").style.display="none";
 }
 
-/* CARGAR USUARIO */
 async function cargarUsuario(){
 const { data } = await supabaseClient
 .from("usuarios")
@@ -289,14 +243,12 @@ document.getElementById("bienvenida").textContent="Bienvenido "+data.usuario+" �
 mostrarModal("🎉 Bienvenido a Invertix Pro",
 "Has recibido $10 de bono de bienvenida para comenzar.");
 }
-
 cargarUsuario();
 
 /* COMPRAR */
 async function comprar(precio,ganancia,plan){
-
 if(usuarioData.saldo < precio){
-mostrarModal("Saldo insuficiente","No tienes saldo suficiente para comprar este plan.");
+mostrarModal("Saldo insuficiente","No tienes saldo suficiente.");
 return;
 }
 
@@ -309,43 +261,13 @@ await supabaseClient.from("usuarios")
 await supabaseClient.from("historial")
 .insert({usuario:usuarioActivo,plan,precio,ganancia});
 
-mostrarModal("Plan comprado","Tu inversión fue activada correctamente.");
+mostrarModal("Plan comprado","Inversión activada.");
 
 cargarUsuario();
 cargarHistorial();
 }
 
-/* HISTORIAL */
-async function cargarHistorial(){
-
-const { data } = await supabaseClient
-.from("historial")
-.select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
-
-const cont = document.getElementById("listaHistorial");
-cont.innerHTML="";
-
-if(!data || data.length===0){
-cont.innerHTML="<p>No hay compras todavía</p>";
-return;
-}
-
-data.forEach(i=>{
-cont.innerHTML+=`
-<div class="histItem">
-<b>${i.plan}</b><br>
-💲 Precio: $${i.precio}<br>
-📈 Ganancia diaria: $${i.ganancia}<br>
-📅 ${new Date(i.created_at).toLocaleString()}
-</div>`;
-});
-}
-
-cargarHistorial();
-
-/* RETIRAR */
+/* BLOQUEO BONO */
 async function retirar(){
 
 let banco=document.getElementById("banco").value;
@@ -355,6 +277,12 @@ let monto=Number(document.getElementById("montoRetiro").value);
 
 if(!banco || !nombre || !cuenta || !monto){
 mostrarModal("Error","Completa todos los datos.");
+return;
+}
+
+if(usuarioData.saldo <= 10){
+mostrarModal("Saldo bloqueado",
+"El bono de bienvenida no puede retirarse.");
 return;
 }
 
@@ -372,15 +300,42 @@ await supabaseClient.from("usuarios")
 await supabaseClient.from("retiros")
 .insert([{usuario:usuarioActivo,monto,banco,nombre,cuenta,estado:"Pendiente"}]);
 
-mostrarModal("Retiro solicitado","Tu retiro fue enviado correctamente.");
+mostrarModal("Retiro solicitado","Solicitud enviada.");
 
 cargarUsuario();
 cargarRetiros();
 }
 
-/* CARGAR RETIROS */
-async function cargarRetiros(){
+/* HISTORIAL */
+async function cargarHistorial(){
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
 
+const cont=document.getElementById("listaHistorial");
+cont.innerHTML="";
+
+if(!data || data.length===0){
+cont.innerHTML="<p>No hay compras todavía</p>";
+return;
+}
+
+data.forEach(i=>{
+cont.innerHTML+=`
+<div class="histItem">
+<b>${i.plan}</b><br>
+Precio: $${i.precio}<br>
+Ganancia diaria: $${i.ganancia}<br>
+${new Date(i.created_at).toLocaleString()}
+</div>`;
+});
+}
+cargarHistorial();
+
+/* RETIROS */
+async function cargarRetiros(){
 const { data } = await supabaseClient
 .from("retiros")
 .select("*")
@@ -398,25 +353,22 @@ return;
 data.forEach(r=>{
 cont.innerHTML+=`
 <div class="histItem">
-💸 Monto: $${r.monto}<br>
+Monto: $${r.monto}<br>
 Banco: ${r.banco}<br>
 Cuenta: ${r.cuenta}<br>
-Estado: <b>${r.estado}</b><br>
+Estado: ${r.estado}<br>
 ${new Date(r.created_at).toLocaleString()}
 </div>`;
 });
 }
-
 cargarRetiros();
 
-/* MENU */
 function showSection(id){
 document.querySelectorAll(".section")
 .forEach(s=>s.classList.remove("active"));
 document.getElementById(id).classList.add("active");
 }
 
-/* LOGOUT */
 function logout(){
 localStorage.removeItem("usuarioActivo");
 location.href="index.html";
