@@ -23,38 +23,47 @@ body{
 display:flex;
 justify-content:center;
 align-items:center;
-background:linear-gradient(135deg,#0B1120,#111827,#0B1120);
+background:linear-gradient(135deg,#050b1d,#0b1228,#050b1d);
 color:#EAEAEA;
 }
 
 /* CONTENEDOR */
 .container{
-background:rgba(255,255,255,0.05);
+background:rgba(255,255,255,0.06);
 backdrop-filter:blur(15px);
 padding:40px;
 width:90%;
 max-width:380px;
-border-radius:20px;
-box-shadow:0 0 40px rgba(0,198,255,0.25);
+border-radius:22px;
+box-shadow:0 0 60px rgba(0,198,255,0.35);
 text-align:center;
-border:1px solid rgba(0,198,255,0.25);
+border:1px solid rgba(0,198,255,0.35);
+animation:fadeIn 1s ease;
 }
 
 /* LOGO */
 .logo{
 font-size:55px;
 color:#00C6FF;
-margin-bottom:10px;
+margin-bottom:5px;
+animation:float 3s ease-in-out infinite;
 }
 
-h2{
-margin-bottom:15px;
+/* TITULO ANIMADO */
+.title{
+font-size:28px;
+font-weight:800;
+letter-spacing:2px;
+color:#00C6FF;
+margin-bottom:20px;
+text-shadow:0 0 12px #00C6FF;
+animation:glow 2s infinite alternate;
 }
 
 /* INPUTS */
 input{
 width:100%;
-padding:12px;
+padding:13px;
 margin:10px 0;
 border:none;
 border-radius:10px;
@@ -70,7 +79,7 @@ color:#bfc3c7;
 /* BOTON */
 button{
 width:100%;
-padding:12px;
+padding:13px;
 margin-top:15px;
 border:none;
 border-radius:10px;
@@ -79,10 +88,12 @@ color:white;
 font-weight:bold;
 cursor:pointer;
 font-size:16px;
+transition:.3s;
 }
 
 button:hover{
-opacity:0.9;
+transform:scale(1.05);
+box-shadow:0 0 15px #00C6FF;
 }
 
 /* LINKS */
@@ -104,7 +115,23 @@ width:100%;
 text-align:center;
 font-size:12px;
 color:#9ca3af;
-opacity:0.9;
+}
+
+/* ANIMACIONES */
+@keyframes float{
+0%{transform:translateY(0);}
+50%{transform:translateY(-10px);}
+100%{transform:translateY(0);}
+}
+
+@keyframes glow{
+from{text-shadow:0 0 10px #00C6FF;}
+to{text-shadow:0 0 25px #00C6FF;}
+}
+
+@keyframes fadeIn{
+from{opacity:0;transform:scale(0.9);}
+to{opacity:1;transform:scale(1);}
 }
 </style>
 </head>
@@ -114,7 +141,7 @@ opacity:0.9;
 <div class="container">
 
 <div class="logo">📈</div>
-<h2>Invertix Pro</h2>
+<div class="title">INVERTIX PRO</div>
 
 <form id="loginForm">
 <input id="usuario" placeholder="Usuario" required>
@@ -166,19 +193,18 @@ alert("Usuario o contraseña incorrectos");
 return;
 }
 
-/* 🔐 ADMIN */
+/* ADMIN */
 if(usuario === "adminalvin"){
 localStorage.setItem("adminActivo", usuario);
 window.location.href="admin.html";
 return;
 }
 
-/* 👤 USUARIO NORMAL */
+/* USUARIO NORMAL */
 localStorage.setItem("usuarioActivo", usuario);
 window.location.href="dashboard.html";
-
 });
 </script>
 
 </body>
-</html>
+  </html>
