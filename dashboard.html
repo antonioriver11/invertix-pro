@@ -227,6 +227,93 @@ saldo.textContent="$"+data.saldo;
 bienvenida.textContent="Bienvenido "+data.usuario+" 👋";
 }
 cargarUsuario();
+/* ============================
+   HISTORIAL COMPRAS
+============================ */
+async function cargarHistorial(){
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+listaHistorial.innerHTML="";
+
+if(!data || data.length===0){
+listaHistorial.innerHTML="<p>No hay compras todavía</p>";
+return;
+}
+
+data.forEach(i=>{
+listaHistorial.innerHTML+=`
+<div class="histItem">
+<b>${i.plan}</b><br>
+Precio: $${i.precio}<br>
+Ganancia diaria: $${i.ganancia}<br>
+${new Date(i.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+/* ============================
+   LISTA RETIROS
+============================ */
+async function cargarRetiros(){
+const { data } = await supabaseClient
+.from("retiros")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+listaRetiros.innerHTML="";
+
+if(!data || data.length===0){
+listaRetiros.innerHTML="<p>No hay retiros todavía</p>";
+return;
+}
+
+data.forEach(r=>{
+listaRetiros.innerHTML+=`
+<div class="histItem">
+Monto: $${r.monto}<br>
+Banco: ${r.banco}<br>
+Cuenta: ${r.cuenta}<br>
+Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
+${new Date(r.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+/* ============================
+   LISTA RECARGAS
+============================ */
+async function cargarRecargas(){
+const { data } = await supabaseClient
+.from("recargas")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+listaRecargas.innerHTML="";
+
+if(!data || data.length===0){
+listaRecargas.innerHTML="<p>No hay recargas todavía</p>";
+return;
+}
+
+data.forEach(r=>{
+listaRecargas.innerHTML+=`
+<div class="histItem">
+Monto: $${r.monto}<br>
+Método: ${r.metodo}<br>
+Referencia: ${r.referencia}<br>
+Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
+${new Date(r.created_at).toLocaleString()}
+</div>`;
+});
+}
+
+</script>
 
 /* COMPRAR */
 async function comprar(precio,ganancia,plan){
