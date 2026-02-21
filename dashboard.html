@@ -274,6 +274,9 @@ let cuentaSel = cuenta.value;
 if(!monto || !bancoSel || !cuentaSel){
 mostrarModal("Error","Completa todo");
 return;
+if(monto < 30){
+mostrarModal("Error","El monto mínimo de retiro es $30");
+return;
 }
 
 if(monto > usuarioData.saldo){
