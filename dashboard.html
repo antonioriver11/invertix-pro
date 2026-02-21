@@ -69,20 +69,11 @@ align-items:center;justify-content:center;z-index:999;
 .modalBox{
 background:#111827;padding:25px;border-radius:15px;
 width:85%;text-align:center;
-animation:fadeIn .4s ease;
 }
-
-@keyframes fadeIn{
-from{transform:scale(.8);opacity:0;}
-to{transform:scale(1);opacity:1;}
-}
-
-.modalBox h2{color:#00ff88;margin-bottom:10px;font-size:22px;}
-.modalBox p{font-size:15px;margin-top:5px;}
+.modalBox h2{color:#00ff88;margin-bottom:10px;}
 .modalBox button{
 margin-top:15px;padding:8px 15px;border:none;
 border-radius:6px;background:#00ff88;font-weight:bold;
-cursor:pointer;
 }
 </style>
 </head>
@@ -229,18 +220,18 @@ usuarioData=data;
 saldo.textContent="$"+data.saldo;
 bienvenida.textContent="Bienvenido "+data.usuario+" 👋";
 
-/* BONO SOLO UNA VEZ */
-if(data.saldo == 10 && !localStorage.getItem("bonoVisto_"+usuarioActivo)){
-mostrarModal("🎉 ¡Felicidades!",
-"Has recibido un bono de bienvenida de $10 por registrarte en Invertix Pro. ¡Comienza a invertir ahora mismo!");
-localStorage.setItem("bonoVisto_"+usuarioActivo,"si");
+// BONO SOLO UNA VEZ
+if(data.saldo == 10 && !localStorage.getItem("bono_"+usuarioActivo)){
+mostrarModal("🎉 ¡Felicidades!","Has recibido un bono de bienvenida de $10 por registrarte en Invertix Pro.");
+localStorage.setItem("bono_"+usuarioActivo,"visto");
 }
 
 }
 cargarUsuario();
 
-/* RETIRO MINIMO 30 */
+/* RETIRAR */
 async function retirar(){
+
 let monto = Number(montoRetiro.value);
 let bancoSel = banco.value;
 let cuentaSel = cuenta.value;
@@ -250,6 +241,7 @@ mostrarModal("Error","Completa todo");
 return;
 }
 
+// MINIMO
 if(monto < 30){
 mostrarModal("Error","El monto mínimo de retiro es $30");
 return;
@@ -267,9 +259,8 @@ await supabaseClient.from("usuarios")
 await supabaseClient.from("retiros")
 .insert({usuario:usuarioActivo,monto,banco:bancoSel,cuenta:cuentaSel,estado:"Pendiente"});
 
-mostrarModal("Listo","Retiro enviado correctamente");
+mostrarModal("Listo","Retiro enviado");
 cargarUsuario();
-cargarRetiros();
 }
 
 function showSection(id){
