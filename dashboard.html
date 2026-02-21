@@ -104,13 +104,11 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 
 <h3 id="bienvenida"></h3>
 
-<!-- SALDO -->
 <div class="balance">
 <p>Saldo disponible</p>
 <h1 id="saldo">$0</h1>
 </div>
 
-<!-- DASH -->
 <div id="dash" class="section active">
 <div class="card">
 <h3>Planes disponibles</h3>
@@ -136,7 +134,6 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 </div>
 
-<!-- HISTORIAL -->
 <div id="historial" class="section">
 <div class="card">
 <h3>Historial de compras</h3>
@@ -144,7 +141,6 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 </div>
 
-<!-- RETIROS -->
 <div id="retiro" class="section">
 <div class="card">
 <h3>Solicitar retiro</h3>
@@ -167,7 +163,6 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 </div>
 
-<!-- RECARGAR -->
 <div id="recargar" class="section">
 <div class="card">
 <h3>Recargar saldo</h3>
@@ -189,7 +184,6 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 </div>
 
-<!-- MENU -->
 <div class="menu">
 <button onclick="showSection('dash')">Dashboard</button>
 <button onclick="showSection('historial')">Historial</button>
@@ -200,11 +194,14 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <script>
 
 const { createClient } = supabase;
-
 const supabaseClient = createClient(
 "https://vntnciltzouiqkzzwuxy.supabase.co",
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
+
+const modal = document.getElementById("modal");
+const modalTitulo = document.getElementById("modalTitulo");
+const modalTexto = document.getElementById("modalTexto");
 
 const usuarioActivo = localStorage.getItem("usuarioActivo");
 if(!usuarioActivo) location.href="index.html";
@@ -231,79 +228,69 @@ bienvenida.textContent="Bienvenido "+data.usuario+" 👋";
 }
 cargarUsuario();
 
-/* HISTORIAL */
-async function cargarHistorial(){
-const { data } = await supabaseClient
-.from("historial")
-.select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
-
-listaHistorial.innerHTML="";
-data.forEach(i=>{
-listaHistorial.innerHTML+=`
-<div class="histItem">
-<b>${i.plan}</b><br>
-Precio: $${i.precio}<br>
-Ganancia: $${i.ganancia}/día<br>
-${new Date(i.created_at).toLocaleString()}
-</div>`;
-});
+/* COMPRAR */
+async function comprar(precio,ganancia,plan){
+if(usuarioData.saldo < precio){
+mostrarModal("Error","Saldo insuficiente");
+return;
 }
+
+await supabaseClient.from("usuarios")
+.update({saldo:usuarioData.saldo-precio})
+.eq("usuario",usuarioActivo);
+
+await supabaseClient.from("historial")
+.insert({usuario:usuarioActivo,plan,precio,ganancia});
+
+mostrarModal("Éxito","Plan comprado");
+cargarUsuario();
 cargarHistorial();
-
-/* RETIROS */
-async function cargarRetiros(){
-const { data } = await supabaseClient
-.from("retiros")
-.select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
-
-listaRetiros.innerHTML="";
-data.forEach(r=>{
-listaRetiros.innerHTML+=`
-<div class="histItem">
-Monto: $${r.monto}<br>
-Banco: ${r.banco}<br>
-Cuenta: ${r.cuenta}<br>
-Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
-${new Date(r.created_at).toLocaleString()}
-</div>`;
-});
 }
+
+/* RETIRAR */
+async function retirar(){
+let monto=Number(montoRetiro.value);
+let bancoSel=banco.value;
+let cuentaSel=cuenta.value;
+
+if(!monto||!bancoSel||!cuentaSel){
+mostrarModal("Error","Completa todo");
+return;
+}
+
+if(monto>usuarioData.saldo){
+mostrarModal("Error","Saldo insuficiente");
+return;
+}
+
+await supabaseClient.from("usuarios")
+.update({saldo:usuarioData.saldo-monto})
+.eq("usuario",usuarioActivo);
+
+await supabaseClient.from("retiros")
+.insert({usuario:usuarioActivo,monto,banco:bancoSel,cuenta:cuentaSel,estado:"Pendiente"});
+
+mostrarModal("Listo","Retiro enviado");
+cargarUsuario();
 cargarRetiros();
-
-/* RECARGAS */
-async function cargarRecargas(){
-const { data } = await supabaseClient
-.from("recargas")
-.select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
-
-listaRecargas.innerHTML="";
-data.forEach(r=>{
-listaRecargas.innerHTML+=`
-<div class="histItem">
-Monto: $${r.monto}<br>
-Método: ${r.metodo}<br>
-Referencia: ${r.referencia}<br>
-Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
-${new Date(r.created_at).toLocaleString()}
-</div>`;
-});
 }
+
+/* RECARGAR */
+async function recargarSaldo(){
+let metodo=metodoRecarga.value;
+let monto=Number(montoRecarga.value);
+let ref=referenciaRecarga.value;
+
+if(!monto||!ref){
+mostrarModal("Error","Completa todo");
+return;
+}
+
+await supabaseClient.from("recargas")
+.insert({usuario:usuarioActivo,monto,metodo,referencia:ref,estado:"Pendiente"});
+
+mostrarModal("Enviado","Recarga en revisión");
 cargarRecargas();
-
-function showSection(id){
-document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-document.getElementById(id).classList.add("active");
-}
-
-function logout(){
-localStorage.removeItem("usuarioActivo");
-location.href="index.html";
 }
 
 </script>
