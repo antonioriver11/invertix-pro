@@ -46,8 +46,6 @@ font-size:14px;
 }
 
 .estado-pendiente{color:#facc15;}
-.estado-aprobado{color:#22c55e;}
-.estado-rechazado{color:#ef4444;}
 
 .menu{
 position:fixed;bottom:0;left:0;width:100%;
@@ -106,6 +104,7 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <h1 id="saldo">$0</h1>
 </div>
 
+<!-- DASH -->
 <div id="dash" class="section active">
 <div class="card">
 <h3>Planes disponibles</h3>
@@ -131,61 +130,23 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 </div>
 </div>
 
+<!-- HISTORIAL -->
 <div id="historial" class="section">
 <div class="card">
 <h3>Historial de compras</h3>
 <div id="listaHistorial"></div>
 </div>
-</div>
-
-<div id="retiro" class="section">
-<div class="card">
-<h3>Solicitar retiro</h3>
-
-<select id="banco">
-<option>Banco General</option>
-<option>Banistmo</option>
-<option>Caja de Ahorros</option>
-</select>
-
-<input id="cuenta" placeholder="Número de cuenta">
-<input id="montoRetiro" placeholder="Monto">
-
-<button class="buy" onclick="retirar()">Solicitar</button>
-</div>
 
 <div class="card">
-<h3>Mis retiros</h3>
-<div id="listaRetiros"></div>
+<h3>Pagos diarios del plan</h3>
+<div id="listaPagosPlan"></div>
 </div>
 </div>
 
-<div id="recargar" class="section">
-<div class="card">
-<h3>Recargar saldo</h3>
-
-<select id="metodoRecarga">
-<option>Transferencia bancaria</option>
-<option>ACH Express</option>
-</select>
-
-<input id="montoRecarga" placeholder="Monto">
-<input id="referenciaRecarga" placeholder="Referencia comprobante">
-
-<button class="buy" onclick="recargarSaldo()">Enviar</button>
-</div>
-
-<div class="card">
-<h3>Mis recargas</h3>
-<div id="listaRecargas"></div>
-</div>
-</div>
-
+<!-- MENU -->
 <div class="menu">
 <button onclick="showSection('dash')">Dashboard</button>
 <button onclick="showSection('historial')">Historial</button>
-<button onclick="showSection('retiro')">Retiro</button>
-<button onclick="showSection('recargar')">Recargar</button>
 </div>
 
 <script>
@@ -234,12 +195,19 @@ await supabaseClient.from("usuarios")
 .update({ saldo: usuarioData.saldo - precio })
 .eq("usuario",usuarioActivo);
 
-/* AGREGADO 40 DIAS */
 let fechaFin = new Date();
 fechaFin.setDate(fechaFin.getDate() + 40);
 
 await supabaseClient.from("historial")
-.insert({usuario:usuarioActivo,plan,precio,ganancia,fecha_fin:fechaFin.toISOString()});
+.insert({
+usuario:usuarioActivo,
+plan,
+precio,
+ganancia,
+activa:true,
+ultima_ganancia:new Date(),
+fecha_fin:fechaFin.toISOString()
+});
 
 mostrarModal("Éxito","Plan comprado");
 
@@ -268,107 +236,14 @@ ${new Date(i.created_at).toLocaleString()}
 }
 cargarHistorial();
 
-/* RETIRAR */
-async function retirar(){
-
-let monto = Number(montoRetiro.value);
-let bancoSel = banco.value;
-let cuentaSel = cuenta.value;
-
-if(!monto || !bancoSel || !cuentaSel){
-mostrarModal("Error","Completa todo");
-return;
-}
-
-if(monto > usuarioData.saldo){
-mostrarModal("Error","Saldo insuficiente");
-return;
-}
-
-await supabaseClient.from("usuarios")
-.update({ saldo: usuarioData.saldo - monto })
-.eq("usuario",usuarioActivo);
-
-await supabaseClient.from("retiros")
-.insert({usuario:usuarioActivo,monto,banco:bancoSel,cuenta:cuentaSel,estado:"Pendiente"});
-
-mostrarModal("Listo","Retiro enviado");
-
-cargarUsuario();
-cargarRetiros();
-}
-
-/* CARGAR RETIROS */
-async function cargarRetiros(){
-const { data } = await supabaseClient
-.from("retiros")
-.select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
-
-listaRetiros.innerHTML="";
-data.forEach(r=>{
-listaRetiros.innerHTML+=`
-<div class="histItem">
-Monto: $${r.monto}<br>
-Banco: ${r.banco}<br>
-Cuenta: ${r.cuenta}<br>
-Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
-${new Date(r.created_at).toLocaleString()}
-</div>`;
-});
-}
-cargarRetiros();
-
-/* RECARGAR */
-async function recargarSaldo(){
-
-let metodo = metodoRecarga.value;
-let monto = Number(montoRecarga.value);
-let ref = referenciaRecarga.value;
-
-if(!monto || !ref){
-mostrarModal("Error","Completa todo");
-return;
-}
-
-await supabaseClient.from("recargas")
-.insert({usuario:usuarioActivo,monto,metodo,referencia:ref,estado:"Pendiente"});
-
-mostrarModal("Enviado","Recarga en revisión");
-
-cargarRecargas();
-}
-
-/* CARGAR RECARGAS */
-async function cargarRecargas(){
-const { data } = await supabaseClient
-.from("recargas")
-.select("*")
-.eq("usuario",usuarioActivo)
-.order("created_at",{ascending:false});
-
-listaRecargas.innerHTML="";
-data.forEach(r=>{
-listaRecargas.innerHTML+=`
-<div class="histItem">
-Monto: $${r.monto}<br>
-Método: ${r.metodo}<br>
-Referencia: ${r.referencia}<br>
-Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
-${new Date(r.created_at).toLocaleString()}
-</div>`;
-});
-}
-cargarRecargas();
-
-/* ===== PAGO AUTOMÁTICO ===== */
+/* PAGAR GANANCIAS */
 async function pagarGanancias(){
 
 const { data } = await supabaseClient
 .from("historial")
 .select("*")
-.eq("usuario",usuarioActivo);
+.eq("usuario",usuarioActivo)
+.eq("activa",true);
 
 if(!data) return;
 
@@ -376,7 +251,7 @@ let ahora = new Date();
 
 for(const p of data){
 
-let ultima = p.ultima_ganancia ? new Date(p.ultima_ganancia) : new Date(p.created_at);
+let ultima = new Date(p.ultima_ganancia);
 let horas = (ahora - ultima)/1000/60/60;
 let fin = new Date(p.fecha_fin);
 
@@ -392,6 +267,13 @@ await supabaseClient.from("historial")
 .update({ ultima_ganancia: ahora })
 .eq("id",p.id);
 
+await supabaseClient.from("pagos_plan")
+.insert({
+usuario:usuarioActivo,
+plan:p.plan,
+monto:p.ganancia
+});
+
 usuarioData.saldo += p.ganancia;
 }
 
@@ -400,7 +282,28 @@ usuarioData.saldo += p.ganancia;
 saldo.textContent="$"+usuarioData.saldo;
 }
 
+/* PAGOS PLAN */
+async function cargarPagosPlan(){
+const { data } = await supabaseClient
+.from("pagos_plan")
+.select("*")
+.eq("usuario",usuarioActivo)
+.order("created_at",{ascending:false});
+
+listaPagosPlan.innerHTML="";
+
+data.forEach(p=>{
+listaPagosPlan.innerHTML+=`
+<div class="histItem estado-pendiente">
+Plan: ${p.plan}<br>
+Pagado: $${p.monto}<br>
+${new Date(p.created_at).toLocaleString()}
+</div>`;
+});
+}
+
 pagarGanancias();
+cargarPagosPlan();
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
