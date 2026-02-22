@@ -384,9 +384,19 @@ if(ahora > fin) continue;
 
 if(horas >= 24){
 
+const { data: userFresh } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario", usuarioActivo)
+.single();
+
+let nuevoSaldo = Number(userFresh.saldo) + Number(p.ganancia);
+
 await supabaseClient.from("usuarios")
-.update({ saldo: usuarioData.saldo += p.ganancia })
+.update({ saldo: nuevoSaldo })
 .eq("usuario",usuarioActivo);
+
+usuarioData.saldo = nuevoSaldo;
 
 await supabaseClient.from("historial")
 .update({ ultima_ganancia: ahora })
