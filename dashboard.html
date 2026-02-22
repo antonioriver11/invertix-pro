@@ -234,8 +234,12 @@ await supabaseClient.from("usuarios")
 .update({ saldo: usuarioData.saldo - precio })
 .eq("usuario",usuarioActivo);
 
+/* AGREGADO 40 DIAS */
+let fechaFin = new Date();
+fechaFin.setDate(fechaFin.getDate() + 40);
+
 await supabaseClient.from("historial")
-.insert({usuario:usuarioActivo,plan,precio,ganancia});
+.insert({usuario:usuarioActivo,plan,precio,ganancia,fecha_fin:fechaFin.toISOString()});
 
 mostrarModal("Éxito","Plan comprado");
 
@@ -357,6 +361,46 @@ ${new Date(r.created_at).toLocaleString()}
 });
 }
 cargarRecargas();
+
+/* ===== PAGO AUTOMÁTICO ===== */
+async function pagarGanancias(){
+
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario",usuarioActivo);
+
+if(!data) return;
+
+let ahora = new Date();
+
+for(const p of data){
+
+let ultima = p.ultima_ganancia ? new Date(p.ultima_ganancia) : new Date(p.created_at);
+let horas = (ahora - ultima)/1000/60/60;
+let fin = new Date(p.fecha_fin);
+
+if(ahora > fin) continue;
+
+if(horas >= 24){
+
+await supabaseClient.from("usuarios")
+.update({ saldo: usuarioData.saldo + p.ganancia })
+.eq("usuario",usuarioActivo);
+
+await supabaseClient.from("historial")
+.update({ ultima_ganancia: ahora })
+.eq("id",p.id);
+
+usuarioData.saldo += p.ganancia;
+}
+
+}
+
+saldo.textContent="$"+usuarioData.saldo;
+}
+
+pagarGanancias();
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
