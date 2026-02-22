@@ -385,7 +385,7 @@ if(ahora > fin) continue;
 if(horas >= 24){
 
 await supabaseClient.from("usuarios")
-.update({ saldo: usuarioData.saldo + p.ganancia })
+.update({ saldo: usuarioData.saldo += p.ganancia })
 .eq("usuario",usuarioActivo);
 
 await supabaseClient.from("historial")
