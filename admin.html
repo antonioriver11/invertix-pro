@@ -32,10 +32,21 @@ display:flex;
 min-height:100vh;
 }
 
+/* SIDEBAR */
 .sidebar{
 width:220px;
 background:#020617;
 padding:20px;
+position:fixed;
+left:-240px;
+top:0;
+height:100vh;
+transition:0.3s;
+z-index:999;
+}
+
+.sidebar.active{
+left:0;
 }
 
 .sidebar h3{
@@ -59,9 +70,24 @@ background:#00ff88;
 color:black;
 }
 
+/* BOTON TOGGLE */
+#toggleBtn{
+position:fixed;
+top:15px;
+left:15px;
+background:#00ff88;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+font-weight:bold;
+z-index:1000;
+}
+
+/* CONTENT */
 .content{
 flex:1;
 padding:20px;
+margin-left:0;
 }
 
 .card{
@@ -125,10 +151,13 @@ margin-top:10px;
 
 <body>
 
+<!-- BOTON -->
+<button id="toggleBtn" onclick="toggleMenu()">⚙</button>
+
 <div class="layout">
 
 <!-- SIDEBAR -->
-<div class="sidebar">
+<div class="sidebar" id="sidebar">
 
 <h3>⚙️ Opciones</h3>
 
@@ -143,42 +172,34 @@ margin-top:10px;
 
 <h1>🔐 Panel Admin</h1>
 
-<!-- ================= ASIGNAR ================= -->
+<!-- ASIGNAR -->
 <div id="asignar">
 
 <div class="card">
-
 <input type="text" id="usuario" placeholder="Usuario del cliente">
 <input type="number" id="monto" placeholder="Monto a asignar">
-
 <button onclick="asignarSaldo()">Asignar Saldo</button>
-
 <div class="result" id="resultado"></div>
-
 </div>
 
 </div>
 
-<!-- ================= RETIROS ================= -->
+<!-- RETIROS -->
 <div id="retiros" style="display:none;">
 
 <div class="card">
-
 <h3>Retiros Pendientes</h3>
 <div id="listaRetiros"></div>
-
 </div>
 
 </div>
 
-<!-- ================= USUARIOS ================= -->
+<!-- USUARIOS -->
 <div id="usuarios" style="display:none;">
 
 <div class="card">
-
 <h3>Usuarios Registrados</h3>
 <div id="listaUsuarios"></div>
-
 </div>
 
 </div>
@@ -194,27 +215,34 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-// ================= MENU =================
+// TOGGLE MENU
+function toggleMenu(){
+document.getElementById("sidebar").classList.toggle("active");
+}
+
+// MOSTRAR SECCIONES
 function mostrar(sec){
+
 document.getElementById("asignar").style.display="none";
 document.getElementById("retiros").style.display="none";
 document.getElementById("usuarios").style.display="none";
 
 document.getElementById(sec).style.display="block";
+document.getElementById("sidebar").classList.remove("active");
 }
 
-// ================= ASIGNAR SALDO =================
+// ASIGNAR SALDO
 async function asignarSaldo(){
 
-let usuario = document.getElementById("usuario").value.trim();
-let monto = Number(document.getElementById("monto").value);
+let usuario=document.getElementById("usuario").value.trim();
+let monto=Number(document.getElementById("monto").value);
 
 if(!usuario || monto<=0){
 alert("Datos inválidos");
 return;
 }
 
-const { data, error } = await supabaseClient
+const { data,error } = await supabaseClient
 .from("usuarios")
 .select("*")
 .eq("usuario",usuario)
@@ -227,13 +255,13 @@ return;
 
 await supabaseClient
 .from("usuarios")
-.update({ saldo:monto })
+.update({saldo:monto})
 .eq("usuario",usuario);
 
 document.getElementById("resultado").innerText="Saldo actualizado ✅";
 }
 
-// ================= RETIROS =================
+// RETIROS
 async function cargarRetiros(){
 
 const { data } = await supabaseClient
@@ -268,7 +296,7 @@ cont.innerHTML+=`
 
 cargarRetiros();
 
-// ================= APROBAR =================
+// APROBAR
 async function aprobarRetiro(id){
 
 await supabaseClient
@@ -280,7 +308,7 @@ alert("Retiro aprobado ✅");
 cargarRetiros();
 }
 
-// ================= RECHAZAR =================
+// RECHAZAR
 async function rechazarRetiro(id){
 
 await supabaseClient
@@ -292,7 +320,7 @@ alert("Retiro rechazado ❌");
 cargarRetiros();
 }
 
-// ================= USUARIOS =================
+// USUARIOS
 async function cargarUsuarios(){
 
 const { data } = await supabaseClient
