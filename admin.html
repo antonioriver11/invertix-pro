@@ -71,10 +71,8 @@ border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
-font-size:15px;
 cursor:pointer;
 text-align:left;
-position:relative;
 }
 
 .sideBtn:hover{
@@ -82,43 +80,12 @@ background:#00ff88;
 color:black;
 }
 
-/* ===== BOTON HISTORIAL LED ===== */
-.historialBtn{
-overflow:hidden;
-}
-
-.historialBtn::before{
-content:"";
-position:absolute;
-top:-2px;
-left:-2px;
-right:-2px;
-bottom:-2px;
-background:linear-gradient(90deg,#00ff88,#00c6ff,#9b5cff,#00ff88);
-background-size:400%;
-z-index:-1;
-filter:blur(4px);
-animation:ledMove 4s linear infinite;
-border-radius:12px;
-}
-
-@keyframes ledMove{
-0%{background-position:0%;}
-100%{background-position:400%;}
-}
-
 /* ===== CONTENT ===== */
 .content{
 padding:20px;
 width:100%;
-transition:.35s;
 }
 
-.content.shift{
-margin-left:230px;
-}
-
-/* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
@@ -128,6 +95,7 @@ margin:auto;
 margin-bottom:25px;
 }
 
+/* ===== INPUTS ===== */
 input,button{
 width:100%;
 padding:12px;
@@ -147,23 +115,58 @@ font-weight:bold;
 cursor:pointer;
 }
 
-/* ===== EXTRAS ===== */
-.retiro{
-background:#1f2933;
-padding:15px;
-border-radius:10px;
-margin-top:12px;
-}
-
+/* ===== USUARIOS ===== */
 .usuarioCard{
 background:#1f2933;
 padding:15px;
-border-radius:10px;
+border-radius:12px;
 margin-top:12px;
 line-height:1.6;
 }
 
-.historialItem{
+/* ===== BOTON LED ===== */
+.movBtn{
+margin-top:10px;
+width:45px;
+height:45px;
+border-radius:50%;
+background:#0f172a;
+color:white;
+border:none;
+cursor:pointer;
+position:relative;
+font-size:18px;
+}
+
+.movBtn::before{
+content:"";
+position:absolute;
+inset:-2px;
+background:linear-gradient(90deg,#00ff88,#00c6ff,#9b5cff,#00ff88);
+background-size:400%;
+border-radius:50%;
+filter:blur(4px);
+z-index:-1;
+animation:led 3s linear infinite;
+}
+
+@keyframes led{
+0%{background-position:0%}
+100%{background-position:400%}
+}
+
+/* ===== HISTORIAL ===== */
+.historialBox{
+display:none;
+margin-top:10px;
+background:#0f172a;
+padding:12px;
+border-radius:10px;
+font-size:14px;
+}
+
+/* ===== RETIROS ===== */
+.retiro{
 background:#1f2933;
 padding:15px;
 border-radius:10px;
@@ -186,19 +189,16 @@ margin-top:12px;
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 <h3>INVERTIX ADMIN</h3>
-
 <button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
 <button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
 <button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
-<button class="sideBtn historialBtn" onclick="showSection('historial')">📜 Historial</button>
 </div>
 
 <!-- CONTENT -->
-<div class="content" id="content">
+<div class="content">
 
 <!-- ASIGNAR -->
 <div id="asignar">
-
 <div class="card">
 <input id="usuario" placeholder="Usuario">
 <div id="saldoActual" style="color:#00ff88"></div>
@@ -206,7 +206,6 @@ margin-top:12px;
 <button onclick="asignarSaldo()">Asignar saldo</button>
 <div id="resultado"></div>
 </div>
-
 </div>
 
 <!-- RETIROS -->
@@ -225,14 +224,6 @@ margin-top:12px;
 </div>
 </div>
 
-<!-- HISTORIAL -->
-<div id="historial" style="display:none">
-<div class="card">
-<h3>Historial del sistema</h3>
-<div id="listaHistorial"></div>
-</div>
-</div>
-
 </div>
 
 <script>
@@ -245,19 +236,15 @@ const supabaseClient = createClient(
 );
 
 /* ===== MENU ===== */
-menuBtn.onclick=()=>{
-sidebar.classList.toggle("active");
-content.classList.toggle("shift");
-};
+menuBtn.onclick=()=> sidebar.classList.toggle("active");
 
 /* ===== SECCIONES ===== */
 function showSection(id){
-["asignar","retiros","usuarios","historial"].forEach(s=>{
+["asignar","retiros","usuarios"].forEach(s=>{
 document.getElementById(s).style.display="none";
 });
 document.getElementById(id).style.display="block";
 sidebar.classList.remove("active");
-content.classList.remove("shift");
 }
 
 /* ===== MOSTRAR SALDO ===== */
@@ -268,14 +255,15 @@ const { data } = await supabaseClient
 .eq("usuario",usuario.value)
 .single();
 
-saldoActual.innerText = data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
+saldoActual.innerText =
+data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
 });
 
 /* ===== ASIGNAR ===== */
 async function asignarSaldo(){
 
-let montoN=Number(monto.value);
-if(!usuario.value || montoN<=0) return alert("Datos inválidos");
+if(!usuario.value || monto.value<=0)
+return alert("Datos inválidos");
 
 const { data } = await supabaseClient
 .from("usuarios")
@@ -283,13 +271,17 @@ const { data } = await supabaseClient
 .eq("usuario",usuario.value)
 .single();
 
-let nuevo=data.saldo+montoN;
+if(!data) return alert("Usuario no existe");
 
-await supabaseClient.from("usuarios")
+let nuevo = Number(data.saldo)+Number(monto.value);
+
+await supabaseClient
+.from("usuarios")
 .update({saldo:nuevo})
 .eq("usuario",usuario.value);
 
 resultado.innerText="Nuevo saldo: $"+nuevo;
+monto.value="";
 }
 
 /* ===== RETIROS ===== */
@@ -300,7 +292,6 @@ const { data } = await supabaseClient
 .eq("estado","Pendiente");
 
 listaRetiros.innerHTML="";
-
 data.forEach(r=>{
 listaRetiros.innerHTML+=`
 <div class="retiro">
@@ -325,46 +316,65 @@ await supabaseClient.from("retiros")
 cargarRetiros();
 }
 
-/* ===== USUARIOS ===== */
+/* ===== USUARIOS + MOVIMIENTOS ===== */
 async function cargarUsuarios(){
-const { data } = await supabaseClient
+
+const { data: usuarios } = await supabaseClient
 .from("usuarios")
 .select("usuario,correo,saldo");
 
 listaUsuarios.innerHTML="";
 
-data.forEach(u=>{
-listaUsuarios.innerHTML+=`
-<div class="usuarioCard">
-<b>${u.usuario}</b><br>
-Correo: ${u.correo || "N/A"}<br>
-Saldo: $${u.saldo}
-</div>`;
-});
-}
-cargarUsuarios();
+for(const u of usuarios){
 
-/* ===== HISTORIAL ===== */
-async function cargarHistorial(){
-const { data } = await supabaseClient
+const { data: historial } = await supabaseClient
 .from("historial")
 .select("*")
+.eq("usuario",u.usuario)
 .order("created_at",{ascending:false})
-.limit(30);
+.limit(5);
 
-listaHistorial.innerHTML="";
+let histHTML="";
 
-data.forEach(h=>{
-listaHistorial.innerHTML+=`
-<div class="historialItem">
-Usuario: ${h.usuario}<br>
+if(historial && historial.length){
+historial.forEach(h=>{
+histHTML+=`
 Plan: ${h.plan}<br>
 Ganancia: $${h.ganancia}<br>
 Fecha: ${new Date(h.created_at).toLocaleString()}
-</div>`;
+<hr>
+`;
 });
+}else{
+histHTML="Sin movimientos";
 }
-cargarHistorial();
+
+listaUsuarios.innerHTML+=`
+<div class="usuarioCard">
+
+<b>${u.usuario}</b><br>
+Correo: ${u.correo || "N/A"}<br>
+Saldo: $${u.saldo}<br>
+
+<button class="movBtn" onclick="toggleHist('${u.usuario}')">🔄</button>
+
+<div id="hist_${u.usuario}" class="historialBox">
+${histHTML}
+</div>
+
+</div>
+`;
+}
+
+}
+cargarUsuarios();
+
+/* ===== TOGGLE HISTORIAL ===== */
+function toggleHist(user){
+const box=document.getElementById("hist_"+user);
+box.style.display =
+box.style.display==="block" ? "none" : "block";
+}
 
 </script>
 
