@@ -139,9 +139,10 @@ margin-top:12px;
 
 .usuarioCard{
 background:#1f2933;
-padding:12px;
+padding:15px;
 border-radius:10px;
-margin-top:10px;
+margin-top:12px;
+line-height:1.6;
 }
 
 .aprobar{background:#00ff88;}
@@ -308,22 +309,38 @@ await supabaseClient.from("retiros")
 cargarRetiros();
 }
 
-/* ===== USUARIOS ===== */
+/* ===== USUARIOS MEJORADO ===== */
 async function cargarUsuarios(){
 
-const { data } = await supabaseClient
+const { data: usuarios } = await supabaseClient
 .from("usuarios")
-.select("usuario,saldo");
+.select("usuario,correo,saldo");
 
 let cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
 
-data.forEach(u=>{
+for(const u of usuarios){
+
+const { data: plan } = await supabaseClient
+.from("historial")
+.select("plan,ganancia,fecha_fin")
+.eq("usuario",u.usuario)
+.order("created_at",{ascending:false})
+.limit(1)
+.single();
+
 cont.innerHTML+=`
 <div class="usuarioCard">
-${u.usuario} - $${u.saldo}
-</div>`;
-});
+<b>${u.usuario}</b><br>
+Correo: ${u.correo || "N/A"}<br>
+Saldo: $${u.saldo}<br>
+Plan: ${plan ? plan.plan : "Ninguno"}<br>
+Gana: ${plan ? "$"+plan.ganancia+"/día" : "-"}<br>
+Vence: ${plan ? new Date(plan.fecha_fin).toLocaleDateString() : "-"}
+</div>
+`;
+}
+
 }
 cargarUsuarios();
 
