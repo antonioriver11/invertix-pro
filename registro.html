@@ -60,16 +60,6 @@ font-weight:bold;
 cursor:pointer;
 }
 
-button:disabled{
-opacity:0.6;
-cursor:not-allowed;
-}
-
-#msg{
-margin-top:15px;
-font-weight:bold;
-}
-
 a{color:#00C6FF;}
 </style>
 </head>
@@ -82,11 +72,15 @@ a{color:#00C6FF;}
 <h2>Crear Cuenta</h2>
 
 <form id="registerForm">
+
+<div id="msg" style="margin-top:15px;font-weight:bold;"></div>
+
 <input id="usuario" placeholder="Usuario" required>
 <input id="correo" type="email" placeholder="Correo" required>
 <input id="password" type="password" placeholder="Contraseña" required>
-<button id="btnRegister">Registrarse</button>
-<div id="msg"></div>
+
+<button id="btn">Registrarse</button>
+
 </form>
 
 <p>¿Ya tienes cuenta? <a href="index.html">Iniciar sesión</a></p>
@@ -96,6 +90,7 @@ a{color:#00C6FF;}
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <script>
+
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -103,29 +98,21 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-const msg = document.getElementById("msg");
-const btn = document.getElementById("btnRegister");
-
 document.getElementById("registerForm").addEventListener("submit", async (e)=>{
 e.preventDefault();
-
-msg.textContent = "";
-btn.disabled = true;
 
 const usuario = document.getElementById("usuario").value.trim();
 const correo = document.getElementById("correo").value.trim();
 const password = document.getElementById("password").value.trim();
+const msg = document.getElementById("msg");
+const btn = document.getElementById("btn");
+
+msg.textContent = "";
+btn.disabled = true;
 
 if(!usuario || !correo || !password){
 msg.style.color = "#ff6b6b";
 msg.textContent = "Completa todos los campos";
-btn.disabled = false;
-return;
-}
-
-if(password.length < 6){
-msg.style.color = "#ff6b6b";
-msg.textContent = "La contraseña debe tener mínimo 6 caracteres";
 btn.disabled = false;
 return;
 }
@@ -138,11 +125,8 @@ if(error){
 
 msg.style.color = "#ff6b6b";
 
-if(error.message.includes("unique_usuario")){
-msg.textContent = "❌ Este usuario ya existe";
-}
-else if(error.message.includes("unique_correo")){
-msg.textContent = "❌ Este correo ya está registrado";
+if(error.code === "23505"){
+msg.textContent = "❌ Usuario o correo ya registrado";
 }
 else{
 msg.textContent = "❌ Error al crear cuenta";
@@ -153,13 +137,14 @@ return;
 }
 
 msg.style.color = "#00ff88";
-msg.textContent = "✅ Cuenta creada correctamente 🎉";
+msg.textContent = "✅ Cuenta creada correctamente";
 
 setTimeout(()=>{
 window.location.href="index.html";
 },1500);
 
 });
+
 </script>
 
 </body>
