@@ -423,50 +423,45 @@ document.getElementById("modalHistorial").style.display="flex";
 document.getElementById("historialUser").innerText="Historial de "+usuario;
 
 const { data } = await supabaseClient
-.from("pagos_diarios")
-.select("*")
-.eq("usuario",usuario);
+.from("historial")
+.select("dias_pagados")
+.eq("usuario",usuario)
+.single();
 
+let pagados=data?.dias_pagados||0;
 let box=document.getElementById("diasBox");
 box.innerHTML="";
 
 for(let i=1;i<=40;i++){
-
-let registro = data?.find(d=>d.dia===i);
-
-if(registro && registro.estado==="pagado"){
-box.innerHTML+=`
-<div class="day pagado">
-Día ${i} ✔
-</div>`;
+if(i<=pagados){
+box.innerHTML+=`<div class="day pagado">Día ${i} ✔</div>`;
 }else{
 box.innerHTML+=`
 <div class="day">
 Día ${i}
-<button class="pagarBtn" onclick="pagarDia('${usuario}',${i})">
-PAGAR
-</button>
+<button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
 </div>`;
 }
-
+}
 }
 
-}
+async function pagarDia(usuario){
 
-async function pagarDia(usuario,dia){
+const { data } = await supabaseClient
+.from("historial")
+.select("dias_pagados")
+.eq("usuario",usuario)
+.single();
+
+let nuevo=(data?.dias_pagados||0)+1;
 
 await supabaseClient
-.from("pagos_diarios")
-.upsert({
-usuario:usuario,
-dia:dia,
-estado:"pagado",
-fecha_pago:new Date()
-});
+.from("historial")
+.update({dias_pagados:nuevo})
+.eq("usuario",usuario);
 
 abrirHistorial(usuario);
-
-  }
+}
 
 function cerrarHistorial(){
 document.getElementById("modalHistorial").style.display="none";
