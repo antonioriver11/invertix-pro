@@ -223,6 +223,45 @@ alert("Retiro rechazado ❌");
 cargarRetiros();
 }
 </script>
+<!-- LISTA DE USUARIOS -->
+<div class="container" style="margin-top:30px;">
 
+<h2>👥 Usuarios Registrados</h2>
+
+<div id="usersList" style="margin-top:20px;"></div>
+
+</div>
+
+<script>
+async function cargarUsuarios(){
+
+const { data, error } = await supabaseClient
+.from("usuarios")
+.select("usuario, correo, saldo")
+.order("usuario",{ascending:true});
+
+if(error){
+console.log(error);
+return;
+}
+
+let html = "";
+
+data.forEach(u=>{
+html += `
+<div style="background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px;">
+<b>Usuario:</b> ${u.usuario}<br>
+<b>Correo:</b> ${u.correo}<br>
+<b>Saldo:</b> $${u.saldo}
+</div>
+`;
+});
+
+document.getElementById("usersList").innerHTML = html;
+
+}
+
+cargarUsuarios();
+</script>
 </body>
 </html>
