@@ -15,17 +15,8 @@ location.href="index.html";
 </script>
 
 <style>
-#toggleBtn{
-width:auto !important;
-min-width:45px;
-height:45px;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:0;
-border-radius:50%;
-font-size:20px;
-}
+
+/* ===== GENERAL ===== */
 body{
 background:#0b1120;
 color:white;
@@ -38,41 +29,52 @@ text-align:center;
 margin-bottom:20px;
 }
 
+/* ===== LAYOUT ===== */
 .layout{
 display:flex;
 min-height:100vh;
 }
 
+/* ===== SIDEBAR ===== */
 .sidebar{
-width:220px;
-background:#020617;
-padding:20px;
+width:240px;
+background:linear-gradient(180deg,#020617,#020617,#020617);
+padding:25px 15px;
 position:fixed;
-left:-240px;
+left:-260px;
 top:0;
 height:100vh;
-transition:0.3s;
+transition:.3s;
 z-index:999;
+box-shadow:4px 0 25px rgba(0,0,0,.6);
 }
 
 .sidebar.active{
 left:0;
 }
 
-.sidebar h3{
+.logo{
+font-size:22px;
+font-weight:bold;
 color:#00ff88;
-margin-bottom:20px;
+text-align:center;
+margin-bottom:25px;
 }
 
+/* BOTONES */
 .menuBtn{
 width:100%;
-padding:12px;
-margin-bottom:10px;
+padding:14px;
+margin-bottom:12px;
 border:none;
-border-radius:10px;
+border-radius:12px;
 background:#0f172a;
 color:white;
 cursor:pointer;
+font-size:15px;
+display:flex;
+align-items:center;
+gap:10px;
 }
 
 .menuBtn:hover{
@@ -80,31 +82,36 @@ background:#00ff88;
 color:black;
 }
 
+/* ===== TOGGLE ===== */
 #toggleBtn{
 position:fixed;
 top:15px;
 left:15px;
 background:#00ff88;
 border:none;
-padding:10px 15px;
-border-radius:8px;
+width:45px;
+height:45px;
+border-radius:50%;
+font-size:20px;
 font-weight:bold;
 z-index:1000;
+cursor:pointer;
 }
 
+/* ===== CONTENT ===== */
 .content{
 flex:1;
 padding:20px;
-margin-left:0;
 }
 
 .card{
 background:#111827;
 padding:20px;
-border-radius:12px;
+border-radius:15px;
 max-width:420px;
 margin:auto;
 margin-bottom:25px;
+box-shadow:0 0 15px rgba(0,0,0,.4);
 }
 
 input, button{
@@ -112,7 +119,7 @@ width:100%;
 padding:12px;
 margin:10px 0;
 border:none;
-border-radius:8px;
+border-radius:10px;
 }
 
 input{
@@ -126,27 +133,21 @@ font-weight:bold;
 cursor:pointer;
 }
 
+/* ===== EXTRAS ===== */
 .result{
-margin-top:15px;
-font-size:14px;
+margin-top:10px;
 text-align:center;
 }
 
 .retiro{
 background:#1f2933;
 padding:15px;
-border-radius:10px;
-margin-top:10px;
+border-radius:12px;
+margin-top:12px;
 }
 
-.aprobar{
-background:#00ff88;
-}
-
-.rechazar{
-background:#ff4d4d;
-color:white;
-}
+.aprobar{background:#00ff88;}
+.rechazar{background:#ff4d4d;color:white;}
 
 .usuarioCard{
 background:#1f2933;
@@ -154,18 +155,21 @@ padding:12px;
 border-radius:10px;
 margin-top:10px;
 }
+
 </style>
 </head>
 
 <body>
 
-<button id="toggleBtn" onclick="toggleMenu()">⚙</button>
+<!-- BOTON -->
+<button id="toggleBtn" onclick="toggleMenu()">☰</button>
 
 <div class="layout">
 
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 
-<h3>⚙️ Opciones</h3>
+<div class="logo">INVERTIX ADMIN</div>
 
 <button class="menuBtn" onclick="mostrar('asignar')">➕ Asignar saldo</button>
 <button class="menuBtn" onclick="mostrar('retiros')">💸 Retiros</button>
@@ -173,43 +177,43 @@ margin-top:10px;
 
 </div>
 
+<!-- CONTENIDO -->
 <div class="content">
 
-<h1>🔐 Panel Admin</h1>
+<h1>🔐 Panel Administrador</h1>
 
 <!-- ASIGNAR -->
 <div id="asignar">
 
 <div class="card">
-<input type="text" id="usuario" placeholder="Usuario del cliente">
+
+<input id="usuario" placeholder="Usuario del cliente">
 <div id="saldoActual" style="color:#00ff88;font-size:14px;"></div>
 
 <input type="number" id="monto" placeholder="Monto a asignar">
 
 <button onclick="asignarSaldo()">Asignar Saldo</button>
+
 <div class="result" id="resultado"></div>
+
 </div>
 
 </div>
 
 <!-- RETIROS -->
 <div id="retiros" style="display:none;">
-
 <div class="card">
 <h3>Retiros Pendientes</h3>
 <div id="listaRetiros"></div>
 </div>
-
 </div>
 
 <!-- USUARIOS -->
 <div id="usuarios" style="display:none;">
-
 <div class="card">
 <h3>Usuarios Registrados</h3>
 <div id="listaUsuarios"></div>
 </div>
-
 </div>
 
 </div>
@@ -223,21 +227,22 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-// TOGGLE
+/* ===== TOGGLE ===== */
 function toggleMenu(){
 document.getElementById("sidebar").classList.toggle("active");
 }
 
-// SECCIONES
+/* ===== SECCIONES ===== */
 function mostrar(sec){
 document.getElementById("asignar").style.display="none";
 document.getElementById("retiros").style.display="none";
 document.getElementById("usuarios").style.display="none";
+
 document.getElementById(sec).style.display="block";
 document.getElementById("sidebar").classList.remove("active");
 }
 
-// MOSTRAR SALDO AL ESCRIBIR
+/* ===== MOSTRAR SALDO ===== */
 document.getElementById("usuario").addEventListener("blur", async ()=>{
 
 let usuario=document.getElementById("usuario").value.trim();
@@ -250,16 +255,14 @@ const { data } = await supabaseClient
 .single();
 
 if(data){
-document.getElementById("saldoActual").innerText =
-"Saldo actual: $" + data.saldo;
+document.getElementById("saldoActual").innerText="Saldo actual: $"+data.saldo;
 }else{
-document.getElementById("saldoActual").innerText =
-"Usuario no encontrado";
+document.getElementById("saldoActual").innerText="Usuario no encontrado";
 }
 
 });
 
-// ASIGNAR SALDO (SUMAR)
+/* ===== ASIGNAR SALDO ===== */
 async function asignarSaldo(){
 
 let usuario=document.getElementById("usuario").value.trim();
@@ -294,7 +297,7 @@ document.getElementById("resultado").innerText =
 document.getElementById("monto").value="";
 }
 
-// RETIROS
+/* ===== RETIROS ===== */
 async function cargarRetiros(){
 
 const { data } = await supabaseClient
@@ -317,8 +320,7 @@ cont.innerHTML+=`
 <b>Usuario:</b> ${r.usuario}<br>
 <b>Monto:</b> $${r.monto}<br>
 <b>Banco:</b> ${r.banco}<br>
-<b>Cuenta:</b> ${r.cuenta}<br>
-<b>Nombre:</b> ${r.nombre}<br><br>
+<b>Cuenta:</b> ${r.cuenta}<br><br>
 
 <button class="aprobar" onclick="aprobarRetiro('${r.id}')">Aprobar</button>
 <button class="rechazar" onclick="rechazarRetiro('${r.id}')">Rechazar</button>
@@ -329,10 +331,9 @@ cont.innerHTML+=`
 
 cargarRetiros();
 
-// APROBAR
+/* ===== APROBAR ===== */
 async function aprobarRetiro(id){
-await supabaseClient
-.from("retiros")
+await supabaseClient.from("retiros")
 .update({estado:"Aprobado"})
 .eq("id",id);
 
@@ -340,10 +341,9 @@ alert("Retiro aprobado ✅");
 cargarRetiros();
 }
 
-// RECHAZAR
+/* ===== RECHAZAR ===== */
 async function rechazarRetiro(id){
-await supabaseClient
-.from("retiros")
+await supabaseClient.from("retiros")
 .update({estado:"Rechazado"})
 .eq("id",id);
 
@@ -351,7 +351,7 @@ alert("Retiro rechazado ❌");
 cargarRetiros();
 }
 
-// USUARIOS
+/* ===== USUARIOS ===== */
 async function cargarUsuarios(){
 
 const { data } = await supabaseClient
