@@ -251,7 +251,8 @@ async function cargarUsuarios(){
 
 const { data: usuarios } = await supabaseClient
 .from("usuarios")
-.select("usuario,correo,saldo");
+.select("usuario,correo,saldo")
+.order("usuario");
 
 const cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
@@ -260,30 +261,39 @@ for(const u of usuarios){
 
 const { data: hist } = await supabaseClient
 .from("historial")
-.select("*")
+.select("plan,ganancia,fecha_fin,dias_pagados,total_dias")
 .eq("usuario",u.usuario)
-.single();
+.maybeSingle();   // 👈 IMPORTANTE
 
+let plan = hist?.plan || "Starter";
+let gana = hist?.ganancia || 0;
+let vence = hist?.fecha_fin 
+  ? new Date(hist.fecha_fin).toLocaleDateString() 
+  : "-";
 let pagados = hist?.dias_pagados || 0;
 let total = hist?.total_dias || 40;
 
 cont.innerHTML+=`
 <div class="usuarioCard">
 <b>${u.usuario}</b>
-<div class="historialBtn" onclick="abrirHistorial('${u.usuario}')">
+
+<div class="historialBtn"
+onclick="abrirHistorial('${u.usuario}')">
 HISTORIAL
 </div>
+
 <br><br>
 Correo: ${u.correo || "N/A"}<br>
 Saldo: $${u.saldo}<br>
-Plan: ${hist?.plan || "Ninguno"}<br>
-Gana: ${hist?.ganancia ? "$"+hist.ganancia+"/día" : "-"}<br>
-Vence: ${hist?.fecha_fin ? new Date(hist.fecha_fin).toLocaleDateString() : "-"}
-<br><br>
+Plan: ${plan}<br>
+Gana: $${gana}/día<br>
+Vence: ${vence}<br>
+<br>
 Días pagados: ${pagados}/${total}
 </div>
 `;
 }
+
 }
 
 cargarUsuarios();
