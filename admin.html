@@ -3,22 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invertix Pro - Panel Admin</title>
+<title>Invertix Admin</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-
-/* ===== BASE ===== */
 body{
 margin:0;
 font-family:Arial;
 background:#0b1120;
 color:white;
-overflow-x:hidden;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 header{
 display:flex;
 align-items:center;
@@ -37,9 +34,6 @@ font-size:22px;
 cursor:pointer;
 }
 
-header h2{margin:0;}
-
-/* ===== SIDEBAR ===== */
 .sidebar{
 position:fixed;
 top:0;
@@ -49,18 +43,12 @@ height:100vh;
 background:#020617;
 padding:20px;
 transform:translateX(-100%);
-transition:.35s;
+transition:.3s;
 z-index:1000;
 }
 
 .sidebar.active{
 transform:translateX(0);
-}
-
-.sidebar h3{
-color:#00ff88;
-text-align:center;
-margin-bottom:25px;
 }
 
 .sideBtn{
@@ -75,107 +63,88 @@ cursor:pointer;
 text-align:left;
 }
 
-.sideBtn:hover{
-background:#00ff88;
-color:black;
-}
-
-/* ===== CONTENT ===== */
 .content{
 padding:20px;
-width:100%;
 }
 
 .card{
 background:#111827;
 padding:20px;
 border-radius:12px;
-max-width:420px;
-margin:auto;
-margin-bottom:25px;
+margin-bottom:20px;
 }
 
-/* ===== INPUTS ===== */
-input,button{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:none;
-border-radius:8px;
-}
-
-input{
-background:#1f2933;
-color:white;
-}
-
-button{
-background:#00ff88;
-font-weight:bold;
-cursor:pointer;
-}
-
-/* ===== USUARIOS ===== */
+/* USUARIO CARD */
 .usuarioCard{
 background:#1f2933;
 padding:15px;
 border-radius:12px;
-margin-top:12px;
-line-height:1.6;
+margin-bottom:15px;
 }
 
-/* ===== BOTON LED ===== */
-.movBtn{
+/* LED BUTTON */
+.ledBtn{
 margin-top:10px;
-width:45px;
-height:45px;
-border-radius:50%;
-background:#0f172a;
-color:white;
-border:none;
+padding:12px;
+border-radius:10px;
+background:#020617;
+color:#00ff88;
+text-align:center;
+font-weight:bold;
+border:2px solid;
+animation:led 2s linear infinite;
 cursor:pointer;
-position:relative;
-font-size:18px;
-}
-
-.movBtn::before{
-content:"";
-position:absolute;
-inset:-2px;
-background:linear-gradient(90deg,#00ff88,#00c6ff,#9b5cff,#00ff88);
-background-size:400%;
-border-radius:50%;
-filter:blur(4px);
-z-index:-1;
-animation:led 3s linear infinite;
 }
 
 @keyframes led{
-0%{background-position:0%}
-100%{background-position:400%}
+0%{border-color:#00ff88;}
+50%{border-color:#00ffff;}
+100%{border-color:#00ff88;}
 }
 
-/* ===== HISTORIAL ===== */
-.historialBox{
+/* MODAL */
+.modal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.7);
 display:none;
-margin-top:10px;
-background:#0f172a;
-padding:12px;
-border-radius:10px;
-font-size:14px;
+align-items:center;
+justify-content:center;
+z-index:2000;
 }
 
-/* ===== RETIROS ===== */
-.retiro{
-background:#1f2933;
-padding:15px;
-border-radius:10px;
-margin-top:12px;
+.modalBox{
+background:#111827;
+padding:20px;
+width:90%;
+max-width:400px;
+border-radius:12px;
+max-height:80vh;
+overflow:auto;
 }
 
-.aprobar{background:#00ff88;}
-.rechazar{background:#ff4d4d;color:white;}
+.day{
+padding:10px;
+border-radius:8px;
+margin-bottom:8px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
 
+.pagado{background:#064e3b;}
+.pendiente{background:#3f3f46;}
+
+.pagarBtn{
+background:#facc15;
+border:none;
+padding:6px 10px;
+border-radius:6px;
+cursor:pointer;
+}
 </style>
 </head>
 
@@ -183,47 +152,28 @@ margin-top:12px;
 
 <header>
 <button id="menuBtn">☰</button>
-<h2>🔐 Panel Administrador</h2>
+<h2>Panel Admin</h2>
 </header>
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-<h3>INVERTIX ADMIN</h3>
-<button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
-<button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
-<button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
+<button class="sideBtn" onclick="showSection('usuarios')">Usuarios</button>
 </div>
 
-<!-- CONTENT -->
 <div class="content">
 
-<!-- ASIGNAR -->
-<div id="asignar">
-<div class="card">
-<input id="usuario" placeholder="Usuario">
-<div id="saldoActual" style="color:#00ff88"></div>
-<input id="monto" type="number" placeholder="Monto a sumar">
-<button onclick="asignarSaldo()">Asignar saldo</button>
-<div id="resultado"></div>
-</div>
-</div>
-
-<!-- RETIROS -->
-<div id="retiros" style="display:none">
-<div class="card">
-<h3>Retiros pendientes</h3>
-<div id="listaRetiros"></div>
-</div>
-</div>
-
-<!-- USUARIOS -->
-<div id="usuarios" style="display:none">
-<div class="card">
-<h3>Usuarios</h3>
+<div id="usuarios">
 <div id="listaUsuarios"></div>
 </div>
+
 </div>
 
+<!-- MODAL -->
+<div class="modal" id="modal">
+<div class="modalBox">
+<h3 id="modalUser"></h3>
+<div id="diasBox"></div>
+<button onclick="cerrarModal()">Cerrar</button>
+</div>
 </div>
 
 <script>
@@ -235,145 +185,88 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-/* ===== MENU ===== */
-menuBtn.onclick=()=> sidebar.classList.toggle("active");
+const sidebar=document.getElementById("sidebar");
+menuBtn.onclick=()=>sidebar.classList.toggle("active");
 
-/* ===== SECCIONES ===== */
 function showSection(id){
-["asignar","retiros","usuarios"].forEach(s=>{
-document.getElementById(s).style.display="none";
-});
 document.getElementById(id).style.display="block";
 sidebar.classList.remove("active");
 }
 
-/* ===== MOSTRAR SALDO ===== */
-usuario.addEventListener("blur",async()=>{
-const { data } = await supabaseClient
-.from("usuarios")
-.select("saldo")
-.eq("usuario",usuario.value)
-.single();
-
-saldoActual.innerText =
-data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
-});
-
-/* ===== ASIGNAR ===== */
-async function asignarSaldo(){
-
-if(!usuario.value || monto.value<=0)
-return alert("Datos inválidos");
-
-const { data } = await supabaseClient
-.from("usuarios")
-.select("saldo")
-.eq("usuario",usuario.value)
-.single();
-
-if(!data) return alert("Usuario no existe");
-
-let nuevo = Number(data.saldo)+Number(monto.value);
-
-await supabaseClient
-.from("usuarios")
-.update({saldo:nuevo})
-.eq("usuario",usuario.value);
-
-resultado.innerText="Nuevo saldo: $"+nuevo;
-monto.value="";
-}
-
-/* ===== RETIROS ===== */
-async function cargarRetiros(){
-const { data } = await supabaseClient
-.from("retiros")
-.select("*")
-.eq("estado","Pendiente");
-
-listaRetiros.innerHTML="";
-data.forEach(r=>{
-listaRetiros.innerHTML+=`
-<div class="retiro">
-Usuario: ${r.usuario}<br>
-Monto: $${r.monto}<br>
-<button class="aprobar" onclick="aprobar('${r.id}')">Aprobar</button>
-<button class="rechazar" onclick="rechazar('${r.id}')">Rechazar</button>
-</div>`;
-});
-}
-cargarRetiros();
-
-async function aprobar(id){
-await supabaseClient.from("retiros")
-.update({estado:"Aprobado"}).eq("id",id);
-cargarRetiros();
-}
-
-async function rechazar(id){
-await supabaseClient.from("retiros")
-.update({estado:"Rechazado"}).eq("id",id);
-cargarRetiros();
-}
-
-/* ===== USUARIOS + MOVIMIENTOS ===== */
+/* CARGAR USUARIOS */
 async function cargarUsuarios(){
 
-const { data: usuarios } = await supabaseClient
-.from("usuarios")
-.select("usuario,correo,saldo");
-
-listaUsuarios.innerHTML="";
-
-for(const u of usuarios){
-
-const { data: historial } = await supabaseClient
+const { data } = await supabaseClient
 .from("historial")
-.select("*")
-.eq("usuario",u.usuario)
-.order("created_at",{ascending:false})
-.limit(5);
+.select("usuario,dias_pagados,total_dias");
 
-let histHTML="";
+const cont=document.getElementById("listaUsuarios");
+cont.innerHTML="";
 
-if(historial && historial.length){
-historial.forEach(h=>{
-histHTML+=`
-Plan: ${h.plan}<br>
-Ganancia: $${h.ganancia}<br>
-Fecha: ${new Date(h.created_at).toLocaleString()}
-<hr>
+data.forEach(u=>{
+cont.innerHTML+=`
+<div class="usuarioCard">
+<b>${u.usuario}</b><br>
+Días pagados: ${u.dias_pagados}/${u.total_dias}
+<div class="ledBtn" onclick="abrirHistorial('${u.usuario}',${u.dias_pagados},${u.total_dias})">
+HISTORIAL
+</div>
+</div>
 `;
 });
-}else{
-histHTML="Sin movimientos";
 }
 
-listaUsuarios.innerHTML+=`
-<div class="usuarioCard">
+cargarUsuarios();
 
-<b>${u.usuario}</b><br>
-Correo: ${u.correo || "N/A"}<br>
-Saldo: $${u.saldo}<br>
+/* ABRIR HISTORIAL */
+function abrirHistorial(usuario,pagados,total){
 
-<button class="movBtn" onclick="toggleHist('${u.usuario}')">🔄</button>
+document.getElementById("modal").style.display="flex";
+document.getElementById("modalUser").innerText="Historial: "+usuario;
 
-<div id="hist_${u.usuario}" class="historialBox">
-${histHTML}
-</div>
+let box=document.getElementById("diasBox");
+box.innerHTML="";
 
+for(let i=1;i<=total;i++){
+
+if(i<=pagados){
+box.innerHTML+=`
+<div class="day pagado">Día ${i} ✔</div>
+`;
+}else{
+box.innerHTML+=`
+<div class="day pendiente">
+Día ${i}
+<button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
 </div>
 `;
 }
-
 }
-cargarUsuarios();
+}
 
-/* ===== TOGGLE HISTORIAL ===== */
-function toggleHist(user){
-const box=document.getElementById("hist_"+user);
-box.style.display =
-box.style.display==="block" ? "none" : "block";
+/* PAGAR DIA */
+async function pagarDia(usuario){
+
+const { data } = await supabaseClient
+.from("historial")
+.select("dias_pagados")
+.eq("usuario",usuario)
+.single();
+
+let nuevo = data.dias_pagados + 1;
+
+await supabaseClient
+.from("historial")
+.update({dias_pagados:nuevo})
+.eq("usuario",usuario);
+
+cerrarModal();
+cargarUsuarios();
+}
+
+/* CERRAR */
+function cerrarModal(){
+document.getElementById("modal").style.display="none";
 }
 
 </script>
