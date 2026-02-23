@@ -19,7 +19,7 @@ body{
 background:#0b1120;
 color:white;
 font-family:Arial;
-padding:20px;
+margin:0;
 }
 
 h1{
@@ -27,11 +27,48 @@ text-align:center;
 margin-bottom:20px;
 }
 
+.layout{
+display:flex;
+min-height:100vh;
+}
+
+.sidebar{
+width:220px;
+background:#020617;
+padding:20px;
+}
+
+.sidebar h3{
+color:#00ff88;
+margin-bottom:20px;
+}
+
+.menuBtn{
+width:100%;
+padding:12px;
+margin-bottom:10px;
+border:none;
+border-radius:10px;
+background:#0f172a;
+color:white;
+cursor:pointer;
+}
+
+.menuBtn:hover{
+background:#00ff88;
+color:black;
+}
+
+.content{
+flex:1;
+padding:20px;
+}
+
 .card{
 background:#111827;
 padding:20px;
 border-radius:12px;
-max-width:400px;
+max-width:420px;
 margin:auto;
 margin-bottom:25px;
 }
@@ -76,14 +113,39 @@ background:#00ff88;
 background:#ff4d4d;
 color:white;
 }
+
+.usuarioCard{
+background:#1f2933;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+}
 </style>
 </head>
 
 <body>
 
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+
+<h3>⚙️ Opciones</h3>
+
+<button class="menuBtn" onclick="mostrar('asignar')">➕ Asignar saldo</button>
+<button class="menuBtn" onclick="mostrar('retiros')">💸 Retiros</button>
+<button class="menuBtn" onclick="mostrar('usuarios')">👥 Usuarios</button>
+
+</div>
+
+<!-- CONTENIDO -->
+<div class="content">
+
 <h1>🔐 Panel Admin</h1>
 
-<!-- ASIGNAR SALDO -->
+<!-- ================= ASIGNAR ================= -->
+<div id="asignar">
+
 <div class="card">
 
 <input type="text" id="usuario" placeholder="Usuario del cliente">
@@ -95,12 +157,33 @@ color:white;
 
 </div>
 
-<!-- RETIROS -->
+</div>
+
+<!-- ================= RETIROS ================= -->
+<div id="retiros" style="display:none;">
+
 <div class="card">
 
 <h3>Retiros Pendientes</h3>
 <div id="listaRetiros"></div>
 
+</div>
+
+</div>
+
+<!-- ================= USUARIOS ================= -->
+<div id="usuarios" style="display:none;">
+
+<div class="card">
+
+<h3>Usuarios Registrados</h3>
+<div id="listaUsuarios"></div>
+
+</div>
+
+</div>
+
+</div>
 </div>
 
 <script>
@@ -111,15 +194,22 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-// ======================
-// ASIGNAR SALDO
-// ======================
+// ================= MENU =================
+function mostrar(sec){
+document.getElementById("asignar").style.display="none";
+document.getElementById("retiros").style.display="none";
+document.getElementById("usuarios").style.display="none";
+
+document.getElementById(sec).style.display="block";
+}
+
+// ================= ASIGNAR SALDO =================
 async function asignarSaldo(){
 
 let usuario = document.getElementById("usuario").value.trim();
 let monto = Number(document.getElementById("monto").value);
 
-if(!usuario || monto <= 0){
+if(!usuario || monto<=0){
 alert("Datos inválidos");
 return;
 }
@@ -127,34 +217,23 @@ return;
 const { data, error } = await supabaseClient
 .from("usuarios")
 .select("*")
-.eq("usuario", usuario)
+.eq("usuario",usuario)
 .single();
 
 if(error){
-document.getElementById("resultado").innerText =
-"Usuario no encontrado ❌";
+document.getElementById("resultado").innerText="Usuario no encontrado ❌";
 return;
 }
 
-const { error: updateError } = await supabaseClient
+await supabaseClient
 .from("usuarios")
-.update({ saldo: monto })
-.eq("usuario", usuario);
+.update({ saldo:monto })
+.eq("usuario",usuario);
 
-if(updateError){
-document.getElementById("resultado").innerText =
-"Error al actualizar ❌";
-return;
+document.getElementById("resultado").innerText="Saldo actualizado ✅";
 }
 
-document.getElementById("resultado").innerText =
-"Saldo actualizado correctamente ✅";
-
-}
-
-// ======================
-// CARGAR RETIROS
-// ======================
+// ================= RETIROS =================
 async function cargarRetiros(){
 
 const { data } = await supabaseClient
@@ -163,31 +242,25 @@ const { data } = await supabaseClient
 .eq("estado","Pendiente")
 .order("created_at",{ascending:false});
 
-const cont = document.getElementById("listaRetiros");
-cont.innerHTML = "";
+const cont=document.getElementById("listaRetiros");
+cont.innerHTML="";
 
 if(!data || data.length===0){
-cont.innerHTML = "<p>No hay retiros pendientes</p>";
+cont.innerHTML="No hay retiros pendientes";
 return;
 }
 
 data.forEach(r=>{
-cont.innerHTML += `
+cont.innerHTML+=`
 <div class="retiro">
 <b>Usuario:</b> ${r.usuario}<br>
 <b>Monto:</b> $${r.monto}<br>
 <b>Banco:</b> ${r.banco}<br>
 <b>Cuenta:</b> ${r.cuenta}<br>
-<b>Nombre:</b> ${r.nombre}<br>
-<b>Estado:</b> ${r.estado}<br><br>
+<b>Nombre:</b> ${r.nombre}<br><br>
 
-<button class="aprobar" onclick="aprobarRetiro('${r.id}')">
-Aprobar
-</button>
-
-<button class="rechazar" onclick="rechazarRetiro('${r.id}')">
-Rechazar
-</button>
+<button class="aprobar" onclick="aprobarRetiro('${r.id}')">Aprobar</button>
+<button class="rechazar" onclick="rechazarRetiro('${r.id}')">Rechazar</button>
 </div>
 `;
 });
@@ -195,103 +268,53 @@ Rechazar
 
 cargarRetiros();
 
-// ======================
-// APROBAR
-// ======================
+// ================= APROBAR =================
 async function aprobarRetiro(id){
 
 await supabaseClient
 .from("retiros")
-.update({ estado:"Aprobado" })
+.update({estado:"Aprobado"})
 .eq("id",id);
 
 alert("Retiro aprobado ✅");
 cargarRetiros();
 }
 
-// ======================
-// RECHAZAR
-// ======================
+// ================= RECHAZAR =================
 async function rechazarRetiro(id){
 
 await supabaseClient
 .from("retiros")
-.update({ estado:"Rechazado" })
+.update({estado:"Rechazado"})
 .eq("id",id);
 
 alert("Retiro rechazado ❌");
 cargarRetiros();
 }
-</script>
-<!-- LISTA DE USUARIOS -->
-<div class="container" style="margin-top:30px;">
 
-<h2>👥 Usuarios Registrados</h2>
-
-<div id="usersList" style="margin-top:20px;"></div>
-
-</div>
-
-<script>
+// ================= USUARIOS =================
 async function cargarUsuarios(){
 
-const { data, error } = await supabaseClient
+const { data } = await supabaseClient
 .from("usuarios")
-.select("usuario, correo, saldo")
-.order("usuario",{ascending:true});
+.select("usuario,saldo")
+.order("usuario");
 
-if(error){
-console.log(error);
-return;
-}
-
-let html = "";
+const cont=document.getElementById("listaUsuarios");
+cont.innerHTML="";
 
 data.forEach(u=>{
-html += `
-<div style="background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px;">
-<b>Usuario:</b> ${u.usuario}<br>
-<b>Correo:</b> ${u.correo}<br>
-<b>Saldo:</b> $${u.saldo}
+cont.innerHTML+=`
+<div class="usuarioCard">
+<b>${u.usuario}</b><br>
+Saldo: $${u.saldo}
 </div>
 `;
 });
-
-document.getElementById("usersList").innerHTML = html;
-
 }
 
 cargarUsuarios();
 </script>
+
 </body>
-  <div style="display:flex;min-height:100vh;">
-
-<!-- SIDEBAR -->
-<div style="width:220px;background:#020617;padding:20px;">
-
-<h3 style="color:#00ff88;margin-bottom:20px;">⚙️ Opciones</h3>
-
-<button onclick="mostrarSeccion('asignar')" class="menuBtn">➕ Asignar saldo</button>
-<button onclick="mostrarSeccion('retiros')" class="menuBtn">💸 Retiros</button>
-<button onclick="mostrarSeccion('usuarios')" class="menuBtn">👥 Usuarios</button>
-
-</div>
-
-<!-- CONTENIDO -->
-<div style="flex:1;padding:25px;">
-
-<div id="seccion-asignar">
-<!-- AQUI VA TU ASIGNAR SALDO -->
-</div>
-
-<div id="seccion-retiros" style="display:none;">
-<!-- AQUI VA TU LISTA DE RETIROS -->
-</div>
-
-<div id="seccion-usuarios" style="display:none;">
-<!-- AQUI VA TU LISTA DE USUARIOS -->
-</div>
-
-</div>
-  </div>
 </html>
