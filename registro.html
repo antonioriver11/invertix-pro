@@ -60,6 +60,16 @@ font-weight:bold;
 cursor:pointer;
 }
 
+button:disabled{
+opacity:0.6;
+cursor:not-allowed;
+}
+
+#msg{
+margin-top:15px;
+font-weight:bold;
+}
+
 a{color:#00C6FF;}
 </style>
 </head>
@@ -72,11 +82,11 @@ a{color:#00C6FF;}
 <h2>Crear Cuenta</h2>
 
 <form id="registerForm">
-<div id="msg" style="margin-top:15px;color:#ff6b6b;font-weight:bold;"></div>
 <input id="usuario" placeholder="Usuario" required>
 <input id="correo" type="email" placeholder="Correo" required>
 <input id="password" type="password" placeholder="Contraseña" required>
-<button>Registrarse</button>
+<button id="btnRegister">Registrarse</button>
+<div id="msg"></div>
 </form>
 
 <p>¿Ya tienes cuenta? <a href="index.html">Iniciar sesión</a></p>
@@ -93,55 +103,63 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
+const msg = document.getElementById("msg");
+const btn = document.getElementById("btnRegister");
+
 document.getElementById("registerForm").addEventListener("submit", async (e)=>{
 e.preventDefault();
 
-const usuario = usuarioInput();
-const correo = correoInput();
-const password = passwordInput();
+msg.textContent = "";
+btn.disabled = true;
+
+const usuario = document.getElementById("usuario").value.trim();
+const correo = document.getElementById("correo").value.trim();
+const password = document.getElementById("password").value.trim();
 
 if(!usuario || !correo || !password){
-alert("Completa todos los campos");
+msg.style.color = "#ff6b6b";
+msg.textContent = "Completa todos los campos";
+btn.disabled = false;
 return;
 }
 
-const msg = document.getElementById("msg");
+if(password.length < 6){
+msg.style.color = "#ff6b6b";
+msg.textContent = "La contraseña debe tener mínimo 6 caracteres";
+btn.disabled = false;
+return;
+}
 
 const { error } = await supabaseClient
 .from("usuarios")
 .insert([{ usuario, correo, password }]);
 
-if (error) {
+if(error){
 
-  if (error.message.includes("unique_usuario")) {
-    msg.textContent = "❌ Este usuario ya existe";
-  } 
-  else if (error.message.includes("unique_correo")) {
-    msg.textContent = "❌ Este correo ya está registrado";
-  } 
-  else {
-    msg.textContent = "❌ Error al crear cuenta";
-  }
+msg.style.color = "#ff6b6b";
 
-  return;
+if(error.message.includes("unique_usuario")){
+msg.textContent = "❌ Este usuario ya existe";
+}
+else if(error.message.includes("unique_correo")){
+msg.textContent = "❌ Este correo ya está registrado";
+}
+else{
+msg.textContent = "❌ Error al crear cuenta";
+}
+
+btn.disabled = false;
+return;
 }
 
 msg.style.color = "#00ff88";
-msg.textContent = "✅ Cuenta creada correctamente";
-setTimeout(()=>{
-  window.location.href="index.html";
-},1500);
-}
+msg.textContent = "✅ Cuenta creada correctamente 🎉";
 
-function usuarioInput(){
-return document.getElementById("usuario").value.trim();
-}
-function correoInput(){
-return document.getElementById("correo").value.trim();
-}
-function passwordInput(){
-return document.getElementById("password").value.trim();
-}
+setTimeout(()=>{
+window.location.href="index.html";
+},1500);
+
+});
 </script>
 
 </body>
