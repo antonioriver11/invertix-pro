@@ -37,14 +37,7 @@ font-size:22px;
 cursor:pointer;
 }
 
-header h2{
-margin:0;
-}
-
-/* ===== LAYOUT ===== */
-.container{
-display:flex;
-}
+header h2{margin:0;}
 
 /* ===== SIDEBAR ===== */
 .sidebar{
@@ -56,7 +49,7 @@ height:100vh;
 background:#020617;
 padding:20px;
 transform:translateX(-100%);
-transition:transform .35s ease;
+transition:.35s;
 z-index:1000;
 }
 
@@ -81,6 +74,7 @@ color:white;
 font-size:15px;
 cursor:pointer;
 text-align:left;
+position:relative;
 }
 
 .sideBtn:hover{
@@ -88,12 +82,36 @@ background:#00ff88;
 color:black;
 }
 
+/* ===== BOTON HISTORIAL LED ===== */
+.historialBtn{
+overflow:hidden;
+}
+
+.historialBtn::before{
+content:"";
+position:absolute;
+top:-2px;
+left:-2px;
+right:-2px;
+bottom:-2px;
+background:linear-gradient(90deg,#00ff88,#00c6ff,#9b5cff,#00ff88);
+background-size:400%;
+z-index:-1;
+filter:blur(4px);
+animation:ledMove 4s linear infinite;
+border-radius:12px;
+}
+
+@keyframes ledMove{
+0%{background-position:0%;}
+100%{background-position:400%;}
+}
+
 /* ===== CONTENT ===== */
 .content{
-margin-left:0;
 padding:20px;
 width:100%;
-transition:margin-left .35s ease;
+transition:.35s;
 }
 
 .content.shift{
@@ -145,6 +163,13 @@ margin-top:12px;
 line-height:1.6;
 }
 
+.historialItem{
+background:#1f2933;
+padding:15px;
+border-radius:10px;
+margin-top:12px;
+}
+
 .aprobar{background:#00ff88;}
 .rechazar{background:#ff4d4d;color:white;}
 
@@ -165,6 +190,7 @@ line-height:1.6;
 <button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
 <button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
 <button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
+<button class="sideBtn historialBtn" onclick="showSection('historial')">📜 Historial</button>
 </div>
 
 <!-- CONTENT -->
@@ -199,6 +225,14 @@ line-height:1.6;
 </div>
 </div>
 
+<!-- HISTORIAL -->
+<div id="historial" style="display:none">
+<div class="card">
+<h3>Historial del sistema</h3>
+<div id="listaHistorial"></div>
+</div>
+</div>
+
 </div>
 
 <script>
@@ -211,10 +245,6 @@ const supabaseClient = createClient(
 );
 
 /* ===== MENU ===== */
-const menuBtn=document.getElementById("menuBtn");
-const sidebar=document.getElementById("sidebar");
-const content=document.getElementById("content");
-
 menuBtn.onclick=()=>{
 sidebar.classList.toggle("active");
 content.classList.toggle("shift");
@@ -222,7 +252,7 @@ content.classList.toggle("shift");
 
 /* ===== SECCIONES ===== */
 function showSection(id){
-["asignar","retiros","usuarios"].forEach(s=>{
+["asignar","retiros","usuarios","historial"].forEach(s=>{
 document.getElementById(s).style.display="none";
 });
 document.getElementById(id).style.display="block";
@@ -231,62 +261,48 @@ content.classList.remove("shift");
 }
 
 /* ===== MOSTRAR SALDO ===== */
-document.getElementById("usuario").addEventListener("blur",async()=>{
-
-let usuario=document.getElementById("usuario").value;
-
+usuario.addEventListener("blur",async()=>{
 const { data } = await supabaseClient
 .from("usuarios")
 .select("saldo")
-.eq("usuario",usuario)
+.eq("usuario",usuario.value)
 .single();
 
-document.getElementById("saldoActual").innerText =
-data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
-
+saldoActual.innerText = data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
 });
 
 /* ===== ASIGNAR ===== */
 async function asignarSaldo(){
 
-let usuario=document.getElementById("usuario").value;
-let monto=Number(document.getElementById("monto").value);
-
-if(!usuario || monto<=0) return alert("Datos inválidos");
+let montoN=Number(monto.value);
+if(!usuario.value || montoN<=0) return alert("Datos inválidos");
 
 const { data } = await supabaseClient
 .from("usuarios")
 .select("saldo")
-.eq("usuario",usuario)
+.eq("usuario",usuario.value)
 .single();
 
-if(!data) return alert("Usuario no existe");
+let nuevo=data.saldo+montoN;
 
-let nuevo = Number(data.saldo)+monto;
-
-await supabaseClient
-.from("usuarios")
+await supabaseClient.from("usuarios")
 .update({saldo:nuevo})
-.eq("usuario",usuario);
+.eq("usuario",usuario.value);
 
-document.getElementById("resultado").innerText=
-"Nuevo saldo: $"+nuevo;
-
+resultado.innerText="Nuevo saldo: $"+nuevo;
 }
 
 /* ===== RETIROS ===== */
 async function cargarRetiros(){
-
 const { data } = await supabaseClient
 .from("retiros")
 .select("*")
 .eq("estado","Pendiente");
 
-let cont=document.getElementById("listaRetiros");
-cont.innerHTML="";
+listaRetiros.innerHTML="";
 
 data.forEach(r=>{
-cont.innerHTML+=`
+listaRetiros.innerHTML+=`
 <div class="retiro">
 Usuario: ${r.usuario}<br>
 Monto: $${r.monto}<br>
@@ -309,40 +325,46 @@ await supabaseClient.from("retiros")
 cargarRetiros();
 }
 
-/* ===== USUARIOS MEJORADO ===== */
+/* ===== USUARIOS ===== */
 async function cargarUsuarios(){
-
-const { data: usuarios } = await supabaseClient
+const { data } = await supabaseClient
 .from("usuarios")
 .select("usuario,correo,saldo");
 
-let cont=document.getElementById("listaUsuarios");
-cont.innerHTML="";
+listaUsuarios.innerHTML="";
 
-for(const u of usuarios){
-
-const { data: plan } = await supabaseClient
-.from("historial")
-.select("plan,ganancia,fecha_fin")
-.eq("usuario",u.usuario)
-.order("created_at",{ascending:false})
-.limit(1)
-.single();
-
-cont.innerHTML+=`
+data.forEach(u=>{
+listaUsuarios.innerHTML+=`
 <div class="usuarioCard">
 <b>${u.usuario}</b><br>
 Correo: ${u.correo || "N/A"}<br>
-Saldo: $${u.saldo}<br>
-Plan: ${plan ? plan.plan : "Ninguno"}<br>
-Gana: ${plan ? "$"+plan.ganancia+"/día" : "-"}<br>
-Vence: ${plan ? new Date(plan.fecha_fin).toLocaleDateString() : "-"}
-</div>
-`;
-}
-
+Saldo: $${u.saldo}
+</div>`;
+});
 }
 cargarUsuarios();
+
+/* ===== HISTORIAL ===== */
+async function cargarHistorial(){
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.order("created_at",{ascending:false})
+.limit(30);
+
+listaHistorial.innerHTML="";
+
+data.forEach(h=>{
+listaHistorial.innerHTML+=`
+<div class="historialItem">
+Usuario: ${h.usuario}<br>
+Plan: ${h.plan}<br>
+Ganancia: $${h.ganancia}<br>
+Fecha: ${new Date(h.created_at).toLocaleString()}
+</div>`;
+});
+}
+cargarHistorial();
 
 </script>
 
