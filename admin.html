@@ -7,126 +7,107 @@
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-<script>
-const admin = localStorage.getItem("adminActivo");
-if(!admin){
-location.href="index.html";
-}
-</script>
-
 <style>
 
-/* ===== GENERAL ===== */
+/* ===== BASE ===== */
 body{
+margin:0;
+font-family:Arial;
 background:#0b1120;
 color:white;
-font-family:Arial;
+overflow-x:hidden;
+}
+
+/* ===== HEADER ===== */
+header{
+display:flex;
+align-items:center;
+gap:15px;
+padding:15px;
+background:#020617;
+}
+
+#menuBtn{
+width:45px;
+height:45px;
+border-radius:50%;
+border:none;
+background:#00ff88;
+font-size:22px;
+cursor:pointer;
+}
+
+header h2{
 margin:0;
 }
 
-h1{
-text-align:center;
-margin-bottom:20px;
-}
-
 /* ===== LAYOUT ===== */
-.layout{
+.container{
 display:flex;
-min-height:100vh;
 }
 
 /* ===== SIDEBAR ===== */
 .sidebar{
-width:240px;
-background:#020617;
-padding:25px 15px;
 position:fixed;
-left:-260px;
 top:0;
+left:0;
+width:230px;
 height:100vh;
-transition:.3s;
+background:#020617;
+padding:20px;
+transform:translateX(-100%);
+transition:transform .35s ease;
 z-index:1000;
-box-shadow:4px 0 25px rgba(0,0,0,.6);
 }
 
 .sidebar.active{
-left:0;
+transform:translateX(0);
 }
 
-.logo{
-font-size:22px;
-font-weight:bold;
+.sidebar h3{
 color:#00ff88;
 text-align:center;
 margin-bottom:25px;
 }
 
-.menuBtn{
+.sideBtn{
 width:100%;
 padding:14px;
 margin-bottom:12px;
 border:none;
-border-radius:12px;
+border-radius:10px;
 background:#0f172a;
 color:white;
-cursor:pointer;
 font-size:15px;
-display:flex;
-gap:10px;
+cursor:pointer;
+text-align:left;
 }
 
-.menuBtn:hover{
+.sideBtn:hover{
 background:#00ff88;
 color:black;
 }
 
-/* ===== TOGGLE ===== */
-#toggleBtn{
-position:fixed;
-top:15px;
-left:15px;
-background:#00ff88;
-border:none;
-width:45px;
-height:45px;
-border-radius:50%;
-font-size:20px;
-z-index:1100;
-cursor:pointer;
-}
-
-/* ===== OVERLAY ===== */
-#overlay{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.6);
-display:none;
-z-index:900;
-}
-
 /* ===== CONTENT ===== */
 .content{
-flex:1;
+margin-left:0;
 padding:20px;
-transition:.3s;
+width:100%;
+transition:margin-left .35s ease;
 }
 
 .content.shift{
-margin-left:240px;
+margin-left:230px;
 }
 
 /* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
-border-radius:15px;
+border-radius:12px;
 max-width:420px;
 margin:auto;
 margin-bottom:25px;
-box-shadow:0 0 15px rgba(0,0,0,.4);
 }
 
 input,button{
@@ -134,7 +115,7 @@ width:100%;
 padding:12px;
 margin:10px 0;
 border:none;
-border-radius:10px;
+border-radius:8px;
 }
 
 input{
@@ -149,15 +130,13 @@ cursor:pointer;
 }
 
 /* ===== EXTRAS ===== */
-.result{text-align:center;margin-top:10px;}
 .retiro{
 background:#1f2933;
 padding:15px;
-border-radius:12px;
+border-radius:10px;
 margin-top:12px;
 }
-.aprobar{background:#00ff88;}
-.rechazar{background:#ff4d4d;color:white;}
+
 .usuarioCard{
 background:#1f2933;
 padding:12px;
@@ -165,62 +144,60 @@ border-radius:10px;
 margin-top:10px;
 }
 
+.aprobar{background:#00ff88;}
+.rechazar{background:#ff4d4d;color:white;}
+
 </style>
 </head>
 
 <body>
 
-<button id="toggleBtn" onclick="toggleMenu()">☰</button>
-<div id="overlay" onclick="toggleMenu()"></div>
-
-<div class="layout">
+<header>
+<button id="menuBtn">☰</button>
+<h2>🔐 Panel Administrador</h2>
+</header>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-<div class="logo">INVERTIX ADMIN</div>
+<h3>INVERTIX ADMIN</h3>
 
-<button class="menuBtn" onclick="mostrar('asignar')">➕ Asignar saldo</button>
-<button class="menuBtn" onclick="mostrar('retiros')">💸 Retiros</button>
-<button class="menuBtn" onclick="mostrar('usuarios')">👥 Usuarios</button>
+<button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
+<button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
+<button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
 </div>
 
 <!-- CONTENT -->
-<div class="content">
-
-<h1>🔐 Panel Administrador</h1>
+<div class="content" id="content">
 
 <!-- ASIGNAR -->
 <div id="asignar">
 
 <div class="card">
-<input id="usuario" placeholder="Usuario del cliente">
-<div id="saldoActual" style="color:#00ff88;font-size:14px;"></div>
-
-<input type="number" id="monto" placeholder="Monto a asignar">
-<button onclick="asignarSaldo()">Asignar Saldo</button>
-
-<div class="result" id="resultado"></div>
+<input id="usuario" placeholder="Usuario">
+<div id="saldoActual" style="color:#00ff88"></div>
+<input id="monto" type="number" placeholder="Monto a sumar">
+<button onclick="asignarSaldo()">Asignar saldo</button>
+<div id="resultado"></div>
 </div>
 
 </div>
 
 <!-- RETIROS -->
-<div id="retiros" style="display:none;">
+<div id="retiros" style="display:none">
 <div class="card">
-<h3>Retiros Pendientes</h3>
+<h3>Retiros pendientes</h3>
 <div id="listaRetiros"></div>
 </div>
 </div>
 
 <!-- USUARIOS -->
-<div id="usuarios" style="display:none;">
+<div id="usuarios" style="display:none">
 <div class="card">
-<h3>Usuarios Registrados</h3>
+<h3>Usuarios</h3>
 <div id="listaUsuarios"></div>
 </div>
 </div>
 
-</div>
 </div>
 
 <script>
@@ -233,36 +210,29 @@ const supabaseClient = createClient(
 );
 
 /* ===== MENU ===== */
-function toggleMenu(){
+const menuBtn=document.getElementById("menuBtn");
 const sidebar=document.getElementById("sidebar");
-const overlay=document.getElementById("overlay");
-const content=document.querySelector(".content");
+const content=document.getElementById("content");
 
+menuBtn.onclick=()=>{
 sidebar.classList.toggle("active");
 content.classList.toggle("shift");
-
-overlay.style.display = sidebar.classList.contains("active")
-? "block" : "none";
-}
+};
 
 /* ===== SECCIONES ===== */
-function mostrar(sec){
-["asignar","retiros","usuarios"].forEach(id=>{
-document.getElementById(id).style.display="none";
+function showSection(id){
+["asignar","retiros","usuarios"].forEach(s=>{
+document.getElementById(s).style.display="none";
 });
-
-document.getElementById(sec).style.display="block";
-
-document.getElementById("sidebar").classList.remove("active");
-document.getElementById("overlay").style.display="none";
-document.querySelector(".content").classList.remove("shift");
+document.getElementById(id).style.display="block";
+sidebar.classList.remove("active");
+content.classList.remove("shift");
 }
 
 /* ===== MOSTRAR SALDO ===== */
-document.getElementById("usuario").addEventListener("blur", async ()=>{
+document.getElementById("usuario").addEventListener("blur",async()=>{
 
-let usuario=document.getElementById("usuario").value.trim();
-if(!usuario) return;
+let usuario=document.getElementById("usuario").value;
 
 const { data } = await supabaseClient
 .from("usuarios")
@@ -275,16 +245,13 @@ data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
 
 });
 
-/* ===== ASIGNAR SALDO ===== */
+/* ===== ASIGNAR ===== */
 async function asignarSaldo(){
 
-let usuario=document.getElementById("usuario").value.trim();
+let usuario=document.getElementById("usuario").value;
 let monto=Number(document.getElementById("monto").value);
 
-if(!usuario || monto<=0){
-alert("Datos inválidos");
-return;
-}
+if(!usuario || monto<=0) return alert("Datos inválidos");
 
 const { data } = await supabaseClient
 .from("usuarios")
@@ -292,22 +259,18 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .single();
 
-if(!data){
-document.getElementById("resultado").innerText="Usuario no encontrado ❌";
-return;
-}
+if(!data) return alert("Usuario no existe");
 
-let nuevoSaldo = Number(data.saldo) + monto;
+let nuevo = Number(data.saldo)+monto;
 
 await supabaseClient
 .from("usuarios")
-.update({saldo:nuevoSaldo})
+.update({saldo:nuevo})
 .eq("usuario",usuario);
 
-document.getElementById("resultado").innerText =
-"Saldo actualizado ✅ Nuevo saldo: $" + nuevoSaldo;
+document.getElementById("resultado").innerText=
+"Nuevo saldo: $"+nuevo;
 
-document.getElementById("monto").value="";
 }
 
 /* ===== RETIROS ===== */
@@ -316,51 +279,32 @@ async function cargarRetiros(){
 const { data } = await supabaseClient
 .from("retiros")
 .select("*")
-.eq("estado","Pendiente")
-.order("created_at",{ascending:false});
+.eq("estado","Pendiente");
 
-const cont=document.getElementById("listaRetiros");
+let cont=document.getElementById("listaRetiros");
 cont.innerHTML="";
-
-if(!data || data.length===0){
-cont.innerHTML="No hay retiros pendientes";
-return;
-}
 
 data.forEach(r=>{
 cont.innerHTML+=`
 <div class="retiro">
-<b>Usuario:</b> ${r.usuario}<br>
-<b>Monto:</b> $${r.monto}<br>
-<b>Banco:</b> ${r.banco}<br>
-<b>Cuenta:</b> ${r.cuenta}<br><br>
-
-<button class="aprobar" onclick="aprobarRetiro('${r.id}')">Aprobar</button>
-<button class="rechazar" onclick="rechazarRetiro('${r.id}')">Rechazar</button>
-</div>
-`;
+Usuario: ${r.usuario}<br>
+Monto: $${r.monto}<br>
+<button class="aprobar" onclick="aprobar('${r.id}')">Aprobar</button>
+<button class="rechazar" onclick="rechazar('${r.id}')">Rechazar</button>
+</div>`;
 });
 }
-
 cargarRetiros();
 
-/* ===== APROBAR ===== */
-async function aprobarRetiro(id){
+async function aprobar(id){
 await supabaseClient.from("retiros")
-.update({estado:"Aprobado"})
-.eq("id",id);
-
-alert("Retiro aprobado ✅");
+.update({estado:"Aprobado"}).eq("id",id);
 cargarRetiros();
 }
 
-/* ===== RECHAZAR ===== */
-async function rechazarRetiro(id){
+async function rechazar(id){
 await supabaseClient.from("retiros")
-.update({estado:"Rechazado"})
-.eq("id",id);
-
-alert("Retiro rechazado ❌");
+.update({estado:"Rechazado"}).eq("id",id);
 cargarRetiros();
 }
 
@@ -369,22 +313,18 @@ async function cargarUsuarios(){
 
 const { data } = await supabaseClient
 .from("usuarios")
-.select("usuario,saldo")
-.order("usuario");
+.select("usuario,saldo");
 
-const cont=document.getElementById("listaUsuarios");
+let cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
 
 data.forEach(u=>{
 cont.innerHTML+=`
 <div class="usuarioCard">
-<b>${u.usuario}</b><br>
-Saldo: $${u.saldo}
-</div>
-`;
+${u.usuario} - $${u.saldo}
+</div>`;
 });
 }
-
 cargarUsuarios();
 
 </script>
