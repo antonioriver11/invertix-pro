@@ -105,6 +105,8 @@ alert("Completa todos los campos");
 return;
 }
 
+const msg = document.getElementById("msg");
+
 const { error } = await supabaseClient
 .from("usuarios")
 .insert([{ usuario, correo, password }]);
@@ -112,22 +114,24 @@ const { error } = await supabaseClient
 if (error) {
 
   if (error.message.includes("unique_usuario")) {
-    alert("❌ Este usuario ya existe");
+    msg.textContent = "❌ Este usuario ya existe";
   } 
   else if (error.message.includes("unique_correo")) {
-    alert("❌ Este correo ya está registrado");
+    msg.textContent = "❌ Este correo ya está registrado";
   } 
   else {
-    alert("❌ Error: " + error.message);
+    msg.textContent = "❌ Error al crear cuenta";
   }
 
   return;
 }
 
-alert("✅ Cuenta creada correctamente 🎉");
-window.location.href = "index.html";
-
-});
+msg.style.color = "#00ff88";
+msg.textContent = "✅ Cuenta creada correctamente";
+setTimeout(()=>{
+  window.location.href="index.html";
+},1500);
+}
 
 function usuarioInput(){
 return document.getElementById("usuario").value.trim();
