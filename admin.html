@@ -35,10 +35,22 @@ display:flex;
 min-height:100vh;
 }
 
+/* ===== OVERLAY ===== */
+#overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.55);
+z-index:998;
+display:none;
+}
+
 /* ===== SIDEBAR ===== */
 .sidebar{
 width:240px;
-background:linear-gradient(180deg,#020617,#020617,#020617);
+background:#020617;
 padding:25px 15px;
 position:fixed;
 left:-260px;
@@ -164,6 +176,9 @@ margin-top:10px;
 <!-- BOTON -->
 <button id="toggleBtn" onclick="toggleMenu()">☰</button>
 
+<!-- OVERLAY -->
+<div id="overlay" onclick="toggleMenu()"></div>
+
 <div class="layout">
 
 <!-- SIDEBAR -->
@@ -229,17 +244,30 @@ const supabaseClient = createClient(
 
 /* ===== TOGGLE ===== */
 function toggleMenu(){
-document.getElementById("sidebar").classList.toggle("active");
+
+const sidebar=document.getElementById("sidebar");
+const overlay=document.getElementById("overlay");
+
+sidebar.classList.toggle("active");
+
+if(sidebar.classList.contains("active")){
+overlay.style.display="block";
+}else{
+overlay.style.display="none";
+}
 }
 
 /* ===== SECCIONES ===== */
 function mostrar(sec){
+
 document.getElementById("asignar").style.display="none";
 document.getElementById("retiros").style.display="none";
 document.getElementById("usuarios").style.display="none";
 
 document.getElementById(sec).style.display="block";
+
 document.getElementById("sidebar").classList.remove("active");
+document.getElementById("overlay").style.display="none";
 }
 
 /* ===== MOSTRAR SALDO ===== */
