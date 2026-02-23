@@ -138,6 +138,17 @@ margin-top:12px;
 }
 
 .usuarioCard{
+  .copyBtn{
+display:inline-block;
+margin-left:8px;
+cursor:pointer;
+color:#00ff88;
+font-size:14px;
+}
+
+.copyBtn:hover{
+color:#00ffff;
+}
 background:#1f2933;
 padding:15px;
 border-radius:10px;
@@ -317,7 +328,8 @@ const { data: plan } = await supabaseClient
 
 cont.innerHTML+=`
 <div class="usuarioCard">
-<b>${u.usuario}</b><br>
+<b>${u.usuario}</b>
+<span class="copyBtn" onclick="copiarTexto('${u.usuario}')">📋</span><br>
 Correo: ${u.correo || "N/A"}<br>
 Saldo: $${u.saldo}<br>
 Plan: ${plan ? plan.plan : "Ninguno"}<br>
@@ -390,6 +402,10 @@ abrirHistorial(usuario);
 function cerrarHistorial(){
 document.getElementById("modalHistorial").style.display="none";
 }
+  function copiarTexto(texto){
+navigator.clipboard.writeText(texto);
+alert("Usuario copiado ✅");
+  }
 
 </script>
 
