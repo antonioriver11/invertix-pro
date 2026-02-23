@@ -145,14 +145,6 @@ margin-top:12px;
 line-height:1.6;
 }
 
-.copyBtn{
-margin-left:6px;
-cursor:pointer;
-color:#00ff88;
-}
-
-.copyBtn:hover{color:#00ffff;}
-
 .aprobar{background:#00ff88;}
 .rechazar{background:#ff4d4d;color:white;}
 
@@ -232,6 +224,7 @@ cursor:pointer;
 
 <div class="sidebar" id="sidebar">
 <h3>INVERTIX ADMIN</h3>
+
 <button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
 <button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
 <button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
@@ -286,13 +279,13 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-/* MENU */
+/* ===== MENU ===== */
 menuBtn.onclick=()=>{
 sidebar.classList.toggle("active");
 content.classList.toggle("shift");
 }
 
-/* SECCIONES */
+/* ===== SECCIONES ===== */
 function showSection(id){
 ["asignar","retiros","usuarios"].forEach(s=>{
 document.getElementById(s).style.display="none";
@@ -302,87 +295,7 @@ sidebar.classList.remove("active");
 content.classList.remove("shift");
 }
 
-/* MOSTRAR SALDO CORREGIDO */
-document.getElementById("usuario").addEventListener("input", async ()=>{
-let usuario=document.getElementById("usuario").value.trim();
-
-if(usuario.length<2){
-document.getElementById("saldoActual").innerText="";
-return;
-}
-
-const { data } = await supabaseClient
-.from("usuarios")
-.select("saldo")
-.eq("usuario",usuario)
-.single();
-
-document.getElementById("saldoActual").innerText =
-data ? "Saldo actual: $"+data.saldo : "Usuario no encontrado";
-});
-
-/* ASIGNAR */
-async function asignarSaldo(){
-
-let usuario=document.getElementById("usuario").value;
-let monto=Number(document.getElementById("monto").value);
-
-if(!usuario || monto<=0) return alert("Datos inválidos");
-
-const { data } = await supabaseClient
-.from("usuarios")
-.select("saldo")
-.eq("usuario",usuario)
-.single();
-
-if(!data) return alert("Usuario no existe");
-
-let nuevo = Number(data.saldo)+monto;
-
-await supabaseClient.from("usuarios")
-.update({saldo:nuevo})
-.eq("usuario",usuario);
-
-document.getElementById("resultado").innerText=
-"Nuevo saldo: $"+nuevo;
-}
-
-/* RETIROS */
-async function cargarRetiros(){
-
-const { data } = await supabaseClient
-.from("retiros")
-.select("*")
-.eq("estado","Pendiente");
-
-let cont=document.getElementById("listaRetiros");
-cont.innerHTML="";
-
-data.forEach(r=>{
-cont.innerHTML+=`
-<div class="retiro">
-Usuario: ${r.usuario}<br>
-Monto: $${r.monto}<br>
-<button class="aprobar" onclick="aprobar('${r.id}')">Aprobar</button>
-<button class="rechazar" onclick="rechazar('${r.id}')">Rechazar</button>
-</div>`;
-});
-}
-cargarRetiros();
-
-async function aprobar(id){
-await supabaseClient.from("retiros")
-.update({estado:"Aprobado"}).eq("id",id);
-cargarRetiros();
-}
-
-async function rechazar(id){
-await supabaseClient.from("retiros")
-.update({estado:"Rechazado"}).eq("id",id);
-cargarRetiros();
-}
-
-/* USUARIOS */
+/* ===== USUARIOS ===== */
 async function cargarUsuarios(){
 
 const { data: usuarios } = await supabaseClient
@@ -396,27 +309,34 @@ for(const u of usuarios){
 
 const { data: plan } = await supabaseClient
 .from("historial")
-.select("plan,ganancia,fecha_fin,dias_pagados")
+.select("plan,ganancia,fecha_fin")
 .eq("usuario",u.usuario)
+.order("created_at",{ascending:false})
+.limit(1)
 .single();
 
 cont.innerHTML+=`
 <div class="usuarioCard">
-<b>${u.usuario}</b>
-<span class="copyBtn" onclick="copiarTexto('${u.usuario}')">📋</span><br>
-Correo: ${u.correo||"N/A"}<br>
+<b>${u.usuario}</b><br>
+Correo: ${u.correo || "N/A"}<br>
 Saldo: $${u.saldo}<br>
-Plan: ${plan?.plan||"Ninguno"}<br>
-Gana: ${plan? "$"+plan.ganancia+"/día":"-"}<br>
-Vence: ${plan?.fecha_fin? new Date(plan.fecha_fin).toLocaleDateString():"-"}<br>
+Plan: ${plan ? plan.plan : "Ninguno"}<br>
+Gana: ${plan ? "$"+plan.ganancia+"/día" : "-"}<br>
+Vence: ${plan ? new Date(plan.fecha_fin).toLocaleDateString() : "-"}<br>
 
-<div class="historialBtn" onclick="abrirHistorial('${u.usuario}')">HISTORIAL</div>
-</div>`;
+<div class="historialBtn" onclick="abrirHistorial('${u.usuario}')">
+HISTORIAL
+</div>
+
+</div>
+`;
 }
+
 }
 cargarUsuarios();
 
-/* HISTORIAL */
+/* ===== HISTORIAL ===== */
+
 async function abrirHistorial(usuario){
 
 document.getElementById("modalHistorial").style.display="flex";
@@ -428,11 +348,13 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .single();
 
-let pagados=data?.dias_pagados||0;
+let pagados = data?.dias_pagados || 0;
+
 let box=document.getElementById("diasBox");
 box.innerHTML="";
 
 for(let i=1;i<=40;i++){
+
 if(i<=pagados){
 box.innerHTML+=`<div class="day pagado">Día ${i} ✔</div>`;
 }else{
@@ -442,7 +364,9 @@ Día ${i}
 <button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
 </div>`;
 }
+
 }
+
 }
 
 async function pagarDia(usuario){
@@ -465,11 +389,6 @@ abrirHistorial(usuario);
 
 function cerrarHistorial(){
 document.getElementById("modalHistorial").style.display="none";
-}
-
-function copiarTexto(texto){
-navigator.clipboard.writeText(texto);
-alert("Usuario copiado ✅");
 }
 
 </script>
