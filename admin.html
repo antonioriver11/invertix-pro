@@ -35,18 +35,6 @@ display:flex;
 min-height:100vh;
 }
 
-/* ===== OVERLAY ===== */
-#overlay{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.55);
-z-index:998;
-display:none;
-}
-
 /* ===== SIDEBAR ===== */
 .sidebar{
 width:240px;
@@ -57,7 +45,7 @@ left:-260px;
 top:0;
 height:100vh;
 transition:.3s;
-z-index:999;
+z-index:1000;
 box-shadow:4px 0 25px rgba(0,0,0,.6);
 }
 
@@ -73,7 +61,6 @@ text-align:center;
 margin-bottom:25px;
 }
 
-/* BOTONES */
 .menuBtn{
 width:100%;
 padding:14px;
@@ -85,7 +72,6 @@ color:white;
 cursor:pointer;
 font-size:15px;
 display:flex;
-align-items:center;
 gap:10px;
 }
 
@@ -105,17 +91,34 @@ width:45px;
 height:45px;
 border-radius:50%;
 font-size:20px;
-font-weight:bold;
-z-index:1000;
+z-index:1100;
 cursor:pointer;
+}
+
+/* ===== OVERLAY ===== */
+#overlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.6);
+display:none;
+z-index:900;
 }
 
 /* ===== CONTENT ===== */
 .content{
 flex:1;
 padding:20px;
+transition:.3s;
 }
 
+.content.shift{
+margin-left:240px;
+}
+
+/* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
@@ -126,7 +129,7 @@ margin-bottom:25px;
 box-shadow:0 0 15px rgba(0,0,0,.4);
 }
 
-input, button{
+input,button{
 width:100%;
 padding:12px;
 margin:10px 0;
@@ -146,21 +149,15 @@ cursor:pointer;
 }
 
 /* ===== EXTRAS ===== */
-.result{
-margin-top:10px;
-text-align:center;
-}
-
+.result{text-align:center;margin-top:10px;}
 .retiro{
 background:#1f2933;
 padding:15px;
 border-radius:12px;
 margin-top:12px;
 }
-
 .aprobar{background:#00ff88;}
 .rechazar{background:#ff4d4d;color:white;}
-
 .usuarioCard{
 background:#1f2933;
 padding:12px;
@@ -173,26 +170,21 @@ margin-top:10px;
 
 <body>
 
-<!-- BOTON -->
 <button id="toggleBtn" onclick="toggleMenu()">☰</button>
-
-<!-- OVERLAY -->
 <div id="overlay" onclick="toggleMenu()"></div>
 
 <div class="layout">
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-
 <div class="logo">INVERTIX ADMIN</div>
 
 <button class="menuBtn" onclick="mostrar('asignar')">➕ Asignar saldo</button>
 <button class="menuBtn" onclick="mostrar('retiros')">💸 Retiros</button>
 <button class="menuBtn" onclick="mostrar('usuarios')">👥 Usuarios</button>
-
 </div>
 
-<!-- CONTENIDO -->
+<!-- CONTENT -->
 <div class="content">
 
 <h1>🔐 Panel Administrador</h1>
@@ -201,16 +193,13 @@ margin-top:10px;
 <div id="asignar">
 
 <div class="card">
-
 <input id="usuario" placeholder="Usuario del cliente">
 <div id="saldoActual" style="color:#00ff88;font-size:14px;"></div>
 
 <input type="number" id="monto" placeholder="Monto a asignar">
-
 <button onclick="asignarSaldo()">Asignar Saldo</button>
 
 <div class="result" id="resultado"></div>
-
 </div>
 
 </div>
@@ -235,6 +224,7 @@ margin-top:10px;
 </div>
 
 <script>
+
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -242,32 +232,30 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-/* ===== TOGGLE ===== */
+/* ===== MENU ===== */
 function toggleMenu(){
-
 const sidebar=document.getElementById("sidebar");
 const overlay=document.getElementById("overlay");
+const content=document.querySelector(".content");
 
 sidebar.classList.toggle("active");
+content.classList.toggle("shift");
 
-if(sidebar.classList.contains("active")){
-overlay.style.display="block";
-}else{
-overlay.style.display="none";
-}
+overlay.style.display = sidebar.classList.contains("active")
+? "block" : "none";
 }
 
 /* ===== SECCIONES ===== */
 function mostrar(sec){
-
-document.getElementById("asignar").style.display="none";
-document.getElementById("retiros").style.display="none";
-document.getElementById("usuarios").style.display="none";
+["asignar","retiros","usuarios"].forEach(id=>{
+document.getElementById(id).style.display="none";
+});
 
 document.getElementById(sec).style.display="block";
 
 document.getElementById("sidebar").classList.remove("active");
 document.getElementById("overlay").style.display="none";
+document.querySelector(".content").classList.remove("shift");
 }
 
 /* ===== MOSTRAR SALDO ===== */
@@ -282,11 +270,8 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .single();
 
-if(data){
-document.getElementById("saldoActual").innerText="Saldo actual: $"+data.saldo;
-}else{
-document.getElementById("saldoActual").innerText="Usuario no encontrado";
-}
+document.getElementById("saldoActual").innerText =
+data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
 
 });
 
@@ -301,13 +286,13 @@ alert("Datos inválidos");
 return;
 }
 
-const { data,error } = await supabaseClient
+const { data } = await supabaseClient
 .from("usuarios")
 .select("saldo")
 .eq("usuario",usuario)
 .single();
 
-if(error){
+if(!data){
 document.getElementById("resultado").innerText="Usuario no encontrado ❌";
 return;
 }
@@ -401,6 +386,7 @@ Saldo: $${u.saldo}
 }
 
 cargarUsuarios();
+
 </script>
 
 </body>
