@@ -3,19 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Invertix Admin</title>
+<title>Invertix Pro - Panel Admin</title>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
+
+/* ===== BASE ===== */
 body{
 margin:0;
 font-family:Arial;
 background:#0b1120;
 color:white;
+overflow-x:hidden;
 }
 
-/* HEADER */
+/* ===== HEADER ===== */
 header{
 display:flex;
 align-items:center;
@@ -34,6 +37,11 @@ font-size:22px;
 cursor:pointer;
 }
 
+header h2{
+margin:0;
+}
+
+/* ===== SIDEBAR ===== */
 .sidebar{
 position:fixed;
 top:0;
@@ -43,12 +51,18 @@ height:100vh;
 background:#020617;
 padding:20px;
 transform:translateX(-100%);
-transition:.3s;
+transition:transform .35s ease;
 z-index:1000;
 }
 
 .sidebar.active{
 transform:translateX(0);
+}
+
+.sidebar h3{
+color:#00ff88;
+text-align:center;
+margin-bottom:25px;
 }
 
 .sideBtn{
@@ -59,41 +73,59 @@ border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
+font-size:15px;
 cursor:pointer;
 text-align:left;
 }
 
-.content{
-padding:20px;
+.sideBtn:hover{
+background:#00ff88;
+color:black;
 }
 
+/* ===== CONTENT ===== */
+.content{
+margin-left:0;
+padding:20px;
+width:100%;
+transition:margin-left .35s ease;
+}
+
+.content.shift{
+margin-left:230px;
+}
+
+/* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
 border-radius:12px;
-margin-bottom:20px;
+max-width:420px;
+margin:auto;
+margin-bottom:25px;
 }
 
-/* USUARIO CARD */
 .usuarioCard{
 background:#1f2933;
 padding:15px;
 border-radius:12px;
-margin-bottom:15px;
+margin-top:12px;
+position:relative;
 }
 
-/* LED BUTTON */
-.ledBtn{
-margin-top:10px;
-padding:12px;
-border-radius:10px;
+/* ===== BOTON LED HISTORIAL ===== */
+.historialBtn{
+position:absolute;
+top:12px;
+right:12px;
+padding:6px 12px;
+border-radius:8px;
 background:#020617;
 color:#00ff88;
-text-align:center;
-font-weight:bold;
+font-size:12px;
+cursor:pointer;
 border:2px solid;
 animation:led 2s linear infinite;
-cursor:pointer;
 }
 
 @keyframes led{
@@ -102,7 +134,7 @@ cursor:pointer;
 100%{border-color:#00ff88;}
 }
 
-/* MODAL */
+/* ===== MODAL ===== */
 .modal{
 position:fixed;
 top:0;
@@ -111,8 +143,8 @@ width:100%;
 height:100%;
 background:rgba(0,0,0,.7);
 display:none;
-align-items:center;
 justify-content:center;
+align-items:center;
 z-index:2000;
 }
 
@@ -127,7 +159,8 @@ overflow:auto;
 }
 
 .day{
-padding:10px;
+background:#3f3f46;
+padding:12px;
 border-radius:8px;
 margin-bottom:8px;
 display:flex;
@@ -135,8 +168,9 @@ justify-content:space-between;
 align-items:center;
 }
 
-.pagado{background:#064e3b;}
-.pendiente{background:#3f3f46;}
+.pagado{
+background:#065f46;
+}
 
 .pagarBtn{
 background:#facc15;
@@ -145,6 +179,26 @@ padding:6px 10px;
 border-radius:6px;
 cursor:pointer;
 }
+
+input,button{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+}
+
+input{
+background:#1f2933;
+color:white;
+}
+
+button{
+background:#00ff88;
+font-weight:bold;
+cursor:pointer;
+}
+
 </style>
 </head>
 
@@ -152,22 +206,27 @@ cursor:pointer;
 
 <header>
 <button id="menuBtn">☰</button>
-<h2>Panel Admin</h2>
+<h2>🔐 Panel Administrador</h2>
 </header>
 
 <div class="sidebar" id="sidebar">
-<button class="sideBtn" onclick="showSection('usuarios')">Usuarios</button>
+<h3>INVERTIX ADMIN</h3>
+<button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
 </div>
 
-<div class="content">
+<div class="content" id="content">
 
+<!-- USUARIOS -->
 <div id="usuarios">
+<div class="card">
+<h3>Usuarios</h3>
 <div id="listaUsuarios"></div>
 </div>
+</div>
 
 </div>
 
-<!-- MODAL -->
+<!-- MODAL HISTORIAL -->
 <div class="modal" id="modal">
 <div class="modalBox">
 <h3 id="modalUser"></h3>
@@ -185,35 +244,47 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-const sidebar=document.getElementById("sidebar");
-menuBtn.onclick=()=>sidebar.classList.toggle("active");
+/* MENU */
+menuBtn.onclick=()=>{
+sidebar.classList.toggle("active");
+content.classList.toggle("shift");
+};
 
-function showSection(id){
-document.getElementById(id).style.display="block";
-sidebar.classList.remove("active");
-}
-
-/* CARGAR USUARIOS */
+/* USUARIOS */
 async function cargarUsuarios(){
 
-const { data } = await supabaseClient
-.from("historial")
-.select("usuario,dias_pagados,total_dias");
+const { data: usuarios } = await supabaseClient
+.from("usuarios")
+.select("usuario,saldo");
 
-const cont=document.getElementById("listaUsuarios");
+let cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
 
-data.forEach(u=>{
+for(const u of usuarios){
+
+const { data: hist } = await supabaseClient
+.from("historial")
+.select("dias_pagados,total_dias")
+.eq("usuario",u.usuario)
+.single();
+
+let pagados = hist?.dias_pagados || 0;
+let total = hist?.total_dias || 40;
+
 cont.innerHTML+=`
 <div class="usuarioCard">
-<b>${u.usuario}</b><br>
-Días pagados: ${u.dias_pagados}/${u.total_dias}
-<div class="ledBtn" onclick="abrirHistorial('${u.usuario}',${u.dias_pagados},${u.total_dias})">
+<div class="historialBtn"
+onclick="abrirHistorial('${u.usuario}',${pagados},${total})">
 HISTORIAL
 </div>
+
+<b>${u.usuario}</b><br>
+Saldo: $${u.saldo}<br>
+Días pagados: ${pagados}/${total}
 </div>
 `;
-});
+}
+
 }
 
 cargarUsuarios();
@@ -222,7 +293,7 @@ cargarUsuarios();
 function abrirHistorial(usuario,pagados,total){
 
 document.getElementById("modal").style.display="flex";
-document.getElementById("modalUser").innerText="Historial: "+usuario;
+document.getElementById("modalUser").innerText="Historial de "+usuario;
 
 let box=document.getElementById("diasBox");
 box.innerHTML="";
@@ -231,17 +302,24 @@ for(let i=1;i<=total;i++){
 
 if(i<=pagados){
 box.innerHTML+=`
-<div class="day pagado">Día ${i} ✔</div>
+<div class="day pagado">
+Día ${i} ✔
+</div>
 `;
 }else{
 box.innerHTML+=`
-<div class="day pendiente">
+<div class="day">
 Día ${i}
-<button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
+<button class="pagarBtn"
+onclick="pagarDia('${usuario}')">
+PAGAR
+</button>
 </div>
 `;
 }
+
 }
+
 }
 
 /* PAGAR DIA */
@@ -253,7 +331,7 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .single();
 
-let nuevo = data.dias_pagados + 1;
+let nuevo = (data?.dias_pagados || 0) + 1;
 
 await supabaseClient
 .from("historial")
@@ -264,7 +342,7 @@ cerrarModal();
 cargarUsuarios();
 }
 
-/* CERRAR */
+/* CERRAR MODAL */
 function cerrarModal(){
 document.getElementById("modal").style.display="none";
 }
