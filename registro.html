@@ -108,12 +108,23 @@ const { error } = await supabaseClient
 .from("usuarios")
 .insert([{ usuario, correo, password }]);
 
-if(error){
-alert("Error: " + error.message);
-}else{
-alert("Cuenta creada correctamente 🎉");
-window.location.href="index.html";
+if (error) {
+
+  if (error.message.includes("unique_usuario")) {
+    alert("❌ Este usuario ya existe");
+  } 
+  else if (error.message.includes("unique_correo")) {
+    alert("❌ Este correo ya está registrado");
+  } 
+  else {
+    alert("❌ Error: " + error.message);
+  }
+
+  return;
 }
+
+alert("✅ Cuenta creada correctamente 🎉");
+window.location.href = "index.html";
 
 });
 
