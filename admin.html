@@ -15,7 +15,6 @@ location.href="index.html";
 </script>
 
 <style>
-  /* FIX BOTON TOGGLE MOVIL */
 #toggleBtn{
 width:auto !important;
 min-width:45px;
@@ -44,7 +43,6 @@ display:flex;
 min-height:100vh;
 }
 
-/* SIDEBAR */
 .sidebar{
 width:220px;
 background:#020617;
@@ -82,7 +80,6 @@ background:#00ff88;
 color:black;
 }
 
-/* BOTON TOGGLE */
 #toggleBtn{
 position:fixed;
 top:15px;
@@ -95,7 +92,6 @@ font-weight:bold;
 z-index:1000;
 }
 
-/* CONTENT */
 .content{
 flex:1;
 padding:20px;
@@ -163,12 +159,10 @@ margin-top:10px;
 
 <body>
 
-<!-- BOTON -->
 <button id="toggleBtn" onclick="toggleMenu()">⚙</button>
 
 <div class="layout">
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 
 <h3>⚙️ Opciones</h3>
@@ -179,7 +173,6 @@ margin-top:10px;
 
 </div>
 
-<!-- CONTENIDO -->
 <div class="content">
 
 <h1>🔐 Panel Admin</h1>
@@ -189,7 +182,10 @@ margin-top:10px;
 
 <div class="card">
 <input type="text" id="usuario" placeholder="Usuario del cliente">
+<div id="saldoActual" style="color:#00ff88;font-size:14px;"></div>
+
 <input type="number" id="monto" placeholder="Monto a asignar">
+
 <button onclick="asignarSaldo()">Asignar Saldo</button>
 <div class="result" id="resultado"></div>
 </div>
@@ -227,23 +223,43 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-// TOGGLE MENU
+// TOGGLE
 function toggleMenu(){
 document.getElementById("sidebar").classList.toggle("active");
 }
 
-// MOSTRAR SECCIONES
+// SECCIONES
 function mostrar(sec){
-
 document.getElementById("asignar").style.display="none";
 document.getElementById("retiros").style.display="none";
 document.getElementById("usuarios").style.display="none";
-
 document.getElementById(sec).style.display="block";
 document.getElementById("sidebar").classList.remove("active");
 }
 
-// ASIGNAR SALDO
+// MOSTRAR SALDO AL ESCRIBIR
+document.getElementById("usuario").addEventListener("blur", async ()=>{
+
+let usuario=document.getElementById("usuario").value.trim();
+if(!usuario) return;
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario",usuario)
+.single();
+
+if(data){
+document.getElementById("saldoActual").innerText =
+"Saldo actual: $" + data.saldo;
+}else{
+document.getElementById("saldoActual").innerText =
+"Usuario no encontrado";
+}
+
+});
+
+// ASIGNAR SALDO (SUMAR)
 async function asignarSaldo(){
 
 let usuario=document.getElementById("usuario").value.trim();
@@ -256,7 +272,7 @@ return;
 
 const { data,error } = await supabaseClient
 .from("usuarios")
-.select("*")
+.select("saldo")
 .eq("usuario",usuario)
 .single();
 
@@ -265,12 +281,17 @@ document.getElementById("resultado").innerText="Usuario no encontrado ❌";
 return;
 }
 
+let nuevoSaldo = Number(data.saldo) + monto;
+
 await supabaseClient
 .from("usuarios")
-.update({saldo:monto})
+.update({saldo:nuevoSaldo})
 .eq("usuario",usuario);
 
-document.getElementById("resultado").innerText="Saldo actualizado ✅";
+document.getElementById("resultado").innerText =
+"Saldo actualizado ✅ Nuevo saldo: $" + nuevoSaldo;
+
+document.getElementById("monto").value="";
 }
 
 // RETIROS
@@ -310,7 +331,6 @@ cargarRetiros();
 
 // APROBAR
 async function aprobarRetiro(id){
-
 await supabaseClient
 .from("retiros")
 .update({estado:"Aprobado"})
@@ -322,7 +342,6 @@ cargarRetiros();
 
 // RECHAZAR
 async function rechazarRetiro(id){
-
 await supabaseClient
 .from("retiros")
 .update({estado:"Rechazado"})
