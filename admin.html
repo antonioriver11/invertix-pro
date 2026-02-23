@@ -7,95 +7,97 @@
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
-<style>
-
-/* ===== BASE ===== */
-body{
-margin:0;
-font-family:Arial;
-background:#0b1120;
-color:white;
-overflow-x:hidden;
+<script>
+const admin = localStorage.getItem("adminActivo");
+if(!admin){
+location.href="index.html";
 }
+</script>
 
-/* ===== HEADER ===== */
-header{
+<style>
+#toggleBtn{
+width:auto !important;
+min-width:45px;
+height:45px;
 display:flex;
 align-items:center;
-gap:15px;
-padding:15px;
-background:#020617;
-}
-
-#menuBtn{
-width:45px;
-height:45px;
+justify-content:center;
+padding:0;
 border-radius:50%;
-border:none;
-background:#00ff88;
-font-size:22px;
-cursor:pointer;
+font-size:20px;
 }
-
-header h2{
+body{
+background:#0b1120;
+color:white;
+font-family:Arial;
 margin:0;
 }
 
-/* ===== SIDEBAR ===== */
+h1{
+text-align:center;
+margin-bottom:20px;
+}
+
+.layout{
+display:flex;
+min-height:100vh;
+}
+
 .sidebar{
-position:fixed;
-top:0;
-left:0;
-width:230px;
-height:100vh;
+width:220px;
 background:#020617;
 padding:20px;
-transform:translateX(-100%);
-transition:transform .35s ease;
-z-index:1000;
+position:fixed;
+left:-240px;
+top:0;
+height:100vh;
+transition:0.3s;
+z-index:999;
 }
 
 .sidebar.active{
-transform:translateX(0);
+left:0;
 }
 
 .sidebar h3{
 color:#00ff88;
-text-align:center;
-margin-bottom:25px;
+margin-bottom:20px;
 }
 
-.sideBtn{
+.menuBtn{
 width:100%;
-padding:14px;
-margin-bottom:12px;
+padding:12px;
+margin-bottom:10px;
 border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
-font-size:15px;
 cursor:pointer;
-text-align:left;
 }
 
-.sideBtn:hover{
+.menuBtn:hover{
 background:#00ff88;
 color:black;
 }
 
-/* ===== CONTENT ===== */
+#toggleBtn{
+position:fixed;
+top:15px;
+left:15px;
+background:#00ff88;
+border:none;
+padding:10px 15px;
+border-radius:8px;
+font-weight:bold;
+z-index:1000;
+}
+
 .content{
-margin-left:0;
+flex:1;
 padding:20px;
-width:100%;
-transition:margin-left .35s ease;
+margin-left:0;
 }
 
-.content.shift{
-margin-left:230px;
-}
-
-/* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
@@ -105,19 +107,57 @@ margin:auto;
 margin-bottom:25px;
 }
 
-.usuarioCard{
-background:#1f2933;
-padding:15px;
-border-radius:12px;
-margin-top:12px;
-position:relative;
+input, button{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
 }
 
-/* ===== BOTON LED HISTORIAL ===== */
+input{
+background:#1f2933;
+color:white;
+}
+
+button{
+background:#00ff88;
+font-weight:bold;
+cursor:pointer;
+}
+
+.result{
+margin-top:15px;
+font-size:14px;
+text-align:center;
+}
+
+.retiro{
+background:#1f2933;
+padding:15px;
+border-radius:10px;
+margin-top:10px;
+}
+
+.aprobar{
+background:#00ff88;
+}
+
+.rechazar{
+background:#ff4d4d;
+color:white;
+}
+
+.usuarioCard{
+background:#1f2933;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+}
+
+/* ===== BOTON HISTORIAL LED ===== */
 .historialBtn{
-position:absolute;
-top:12px;
-right:12px;
+margin-top:8px;
 padding:6px 12px;
 border-radius:8px;
 background:#020617;
@@ -125,6 +165,7 @@ color:#00ff88;
 font-size:12px;
 cursor:pointer;
 border:2px solid;
+display:inline-block;
 animation:led 2s linear infinite;
 }
 
@@ -134,7 +175,7 @@ animation:led 2s linear infinite;
 100%{border-color:#00ff88;}
 }
 
-/* ===== MODAL ===== */
+/* ===== MODAL HISTORIAL ===== */
 .modal{
 position:fixed;
 top:0;
@@ -179,64 +220,77 @@ padding:6px 10px;
 border-radius:6px;
 cursor:pointer;
 }
-
-input,button{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:none;
-border-radius:8px;
-}
-
-input{
-background:#1f2933;
-color:white;
-}
-
-button{
-background:#00ff88;
-font-weight:bold;
-cursor:pointer;
-}
-
 </style>
 </head>
 
 <body>
 
-<header>
-<button id="menuBtn">☰</button>
-<h2>🔐 Panel Administrador</h2>
-</header>
+<button id="toggleBtn" onclick="toggleMenu()">⚙</button>
+
+<div class="layout">
 
 <div class="sidebar" id="sidebar">
-<h3>INVERTIX ADMIN</h3>
-<button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
+
+<h3>⚙️ Opciones</h3>
+
+<button class="menuBtn" onclick="mostrar('asignar')">➕ Asignar saldo</button>
+<button class="menuBtn" onclick="mostrar('retiros')">💸 Retiros</button>
+<button class="menuBtn" onclick="mostrar('usuarios')">👥 Usuarios</button>
+
 </div>
 
-<div class="content" id="content">
+<div class="content">
+
+<h1>🔐 Panel Admin</h1>
+
+<!-- ASIGNAR -->
+<div id="asignar">
+
+<div class="card">
+<input type="text" id="usuario" placeholder="Usuario del cliente">
+<div id="saldoActual" style="color:#00ff88;font-size:14px;"></div>
+
+<input type="number" id="monto" placeholder="Monto a asignar">
+
+<button onclick="asignarSaldo()">Asignar Saldo</button>
+<div class="result" id="resultado"></div>
+</div>
+
+</div>
+
+<!-- RETIROS -->
+<div id="retiros" style="display:none;">
+
+<div class="card">
+<h3>Retiros Pendientes</h3>
+<div id="listaRetiros"></div>
+</div>
+
+</div>
 
 <!-- USUARIOS -->
-<div id="usuarios">
+<div id="usuarios" style="display:none;">
+
 <div class="card">
-<h3>Usuarios</h3>
+<h3>Usuarios Registrados</h3>
 <div id="listaUsuarios"></div>
 </div>
-</div>
 
 </div>
 
-<!-- MODAL HISTORIAL -->
-<div class="modal" id="modal">
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modalHistorial">
 <div class="modalBox">
-<h3 id="modalUser"></h3>
+<h3 id="historialUser"></h3>
 <div id="diasBox"></div>
-<button onclick="cerrarModal()">Cerrar</button>
+<button onclick="cerrarHistorial()">Cerrar</button>
 </div>
 </div>
 
 <script>
-
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -244,20 +298,112 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-/* MENU */
-menuBtn.onclick=()=>{
-sidebar.classList.toggle("active");
-content.classList.toggle("shift");
-};
+// TOGGLE
+function toggleMenu(){
+document.getElementById("sidebar").classList.toggle("active");
+}
 
-/* USUARIOS */
+// SECCIONES
+function mostrar(sec){
+document.getElementById("asignar").style.display="none";
+document.getElementById("retiros").style.display="none";
+document.getElementById("usuarios").style.display="none";
+document.getElementById(sec).style.display="block";
+document.getElementById("sidebar").classList.remove("active");
+}
+
+// MOSTRAR SALDO
+document.getElementById("usuario").addEventListener("blur", async ()=>{
+let usuario=document.getElementById("usuario").value.trim();
+if(!usuario) return;
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario",usuario)
+.single();
+
+document.getElementById("saldoActual").innerText =
+data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
+});
+
+// ASIGNAR SALDO
+async function asignarSaldo(){
+let usuario=document.getElementById("usuario").value.trim();
+let monto=Number(document.getElementById("monto").value);
+if(!usuario || monto<=0){ alert("Datos inválidos"); return; }
+
+const { data,error } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario",usuario)
+.single();
+
+if(error){ document.getElementById("resultado").innerText="Usuario no encontrado ❌"; return; }
+
+let nuevoSaldo = Number(data.saldo) + monto;
+
+await supabaseClient.from("usuarios").update({saldo:nuevoSaldo}).eq("usuario",usuario);
+
+document.getElementById("resultado").innerText =
+"Saldo actualizado ✅ Nuevo saldo: $" + nuevoSaldo;
+
+document.getElementById("monto").value="";
+}
+
+// RETIROS
+async function cargarRetiros(){
+const { data } = await supabaseClient
+.from("retiros")
+.select("*")
+.eq("estado","Pendiente")
+.order("created_at",{ascending:false});
+
+const cont=document.getElementById("listaRetiros");
+cont.innerHTML="";
+
+if(!data || data.length===0){
+cont.innerHTML="No hay retiros pendientes";
+return;
+}
+
+data.forEach(r=>{
+cont.innerHTML+=`
+<div class="retiro">
+<b>Usuario:</b> ${r.usuario}<br>
+<b>Monto:</b> $${r.monto}<br>
+<b>Banco:</b> ${r.banco}<br>
+<b>Cuenta:</b> ${r.cuenta}<br>
+<b>Nombre:</b> ${r.nombre}<br><br>
+
+<button class="aprobar" onclick="aprobarRetiro('${r.id}')">Aprobar</button>
+<button class="rechazar" onclick="rechazarRetiro('${r.id}')">Rechazar</button>
+</div>
+`;
+});
+}
+cargarRetiros();
+
+async function aprobarRetiro(id){
+await supabaseClient.from("retiros").update({estado:"Aprobado"}).eq("id",id);
+alert("Retiro aprobado ✅");
+cargarRetiros();
+}
+
+async function rechazarRetiro(id){
+await supabaseClient.from("retiros").update({estado:"Rechazado"}).eq("id",id);
+alert("Retiro rechazado ❌");
+cargarRetiros();
+}
+
+// USUARIOS + HISTORIAL
 async function cargarUsuarios(){
-
 const { data: usuarios } = await supabaseClient
 .from("usuarios")
-.select("usuario,saldo");
+.select("usuario,saldo")
+.order("usuario");
 
-let cont=document.getElementById("listaUsuarios");
+const cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
 
 for(const u of usuarios){
@@ -273,58 +419,40 @@ let total = hist?.total_dias || 40;
 
 cont.innerHTML+=`
 <div class="usuarioCard">
+<b>${u.usuario}</b><br>
+Saldo: $${u.saldo}<br>
+Días pagados: ${pagados}/${total}<br>
 <div class="historialBtn"
 onclick="abrirHistorial('${u.usuario}',${pagados},${total})">
 HISTORIAL
 </div>
-
-<b>${u.usuario}</b><br>
-Saldo: $${u.saldo}<br>
-Días pagados: ${pagados}/${total}
 </div>
 `;
 }
-
 }
-
 cargarUsuarios();
 
-/* ABRIR HISTORIAL */
 function abrirHistorial(usuario,pagados,total){
-
-document.getElementById("modal").style.display="flex";
-document.getElementById("modalUser").innerText="Historial de "+usuario;
+document.getElementById("modalHistorial").style.display="flex";
+document.getElementById("historialUser").innerText="Historial de "+usuario;
 
 let box=document.getElementById("diasBox");
 box.innerHTML="";
 
 for(let i=1;i<=total;i++){
-
 if(i<=pagados){
-box.innerHTML+=`
-<div class="day pagado">
-Día ${i} ✔
-</div>
-`;
+box.innerHTML+=`<div class="day pagado">Día ${i} ✔</div>`;
 }else{
 box.innerHTML+=`
 <div class="day">
 Día ${i}
-<button class="pagarBtn"
-onclick="pagarDia('${usuario}')">
-PAGAR
-</button>
-</div>
-`;
+<button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
+</div>`;
+}
+}
 }
 
-}
-
-}
-
-/* PAGAR DIA */
 async function pagarDia(usuario){
-
 const { data } = await supabaseClient
 .from("historial")
 .select("dias_pagados")
@@ -338,15 +466,13 @@ await supabaseClient
 .update({dias_pagados:nuevo})
 .eq("usuario",usuario);
 
-cerrarModal();
+cerrarHistorial();
 cargarUsuarios();
 }
 
-/* CERRAR MODAL */
-function cerrarModal(){
-document.getElementById("modal").style.display="none";
+function cerrarHistorial(){
+document.getElementById("modalHistorial").style.display="none";
 }
-
 </script>
 
 </body>
