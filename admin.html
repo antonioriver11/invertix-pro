@@ -41,6 +41,11 @@ header h2{
 margin:0;
 }
 
+/* ===== LAYOUT ===== */
+.container{
+display:flex;
+}
+
 /* ===== SIDEBAR ===== */
 .sidebar{
 position:fixed;
@@ -51,11 +56,13 @@ height:100vh;
 background:#020617;
 padding:20px;
 transform:translateX(-100%);
-transition:.35s;
+transition:transform .35s ease;
 z-index:1000;
 }
 
-.sidebar.active{transform:translateX(0);}
+.sidebar.active{
+transform:translateX(0);
+}
 
 .sidebar h3{
 color:#00ff88;
@@ -71,14 +78,27 @@ border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
+font-size:15px;
 cursor:pointer;
 text-align:left;
 }
 
-.sideBtn:hover{background:#00ff88;color:black}
+.sideBtn:hover{
+background:#00ff88;
+color:black;
+}
 
 /* ===== CONTENT ===== */
-.content{padding:20px}
+.content{
+margin-left:0;
+padding:20px;
+width:100%;
+transition:margin-left .35s ease;
+}
+
+.content.shift{
+margin-left:230px;
+}
 
 /* ===== CARDS ===== */
 .card{
@@ -98,10 +118,25 @@ border:none;
 border-radius:8px;
 }
 
-input{background:#1f2933;color:white}
-button{background:#00ff88;font-weight:bold}
+input{
+background:#1f2933;
+color:white;
+}
 
-/* ===== USUARIO ===== */
+button{
+background:#00ff88;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* ===== EXTRAS ===== */
+.retiro{
+background:#1f2933;
+padding:15px;
+border-radius:10px;
+margin-top:12px;
+}
+
 .usuarioCard{
 background:#1f2933;
 padding:15px;
@@ -110,21 +145,24 @@ margin-top:12px;
 line-height:1.6;
 }
 
-/* ===== HISTORIAL BTN ===== */
+.aprobar{background:#00ff88;}
+.rechazar{background:#ff4d4d;color:white;}
+
+/* ===== BOTON HISTORIAL ===== */
 .historialBtn{
-margin-top:10px;
+margin-top:8px;
+display:inline-block;
 padding:6px 14px;
-border-radius:20px;
+border-radius:8px;
 background:#020617;
 color:#00ff88;
 font-size:12px;
 cursor:pointer;
 border:2px solid;
-display:inline-block;
-animation:ledMove 2s linear infinite;
+animation:led 2s linear infinite;
 }
 
-@keyframes ledMove{
+@keyframes led{
 0%{border-color:#00ff88;}
 50%{border-color:#00ffff;}
 100%{border-color:#00ff88;}
@@ -141,7 +179,7 @@ background:rgba(0,0,0,.7);
 display:none;
 justify-content:center;
 align-items:center;
-z-index:3000;
+z-index:5000;
 }
 
 .modalBox{
@@ -155,21 +193,21 @@ overflow:auto;
 }
 
 .day{
-background:#3f3f46;
-padding:12px;
+background:#374151;
+padding:10px;
 border-radius:8px;
-margin-bottom:8px;
+margin-bottom:6px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 }
 
-.pagado{background:#065f46}
+.pagado{background:#065f46;}
 
 .pagarBtn{
 background:#facc15;
 border:none;
-padding:6px 10px;
+padding:5px 10px;
 border-radius:6px;
 cursor:pointer;
 }
@@ -184,24 +222,32 @@ cursor:pointer;
 <h2>🔐 Panel Administrador</h2>
 </header>
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 <h3>INVERTIX ADMIN</h3>
-<button class="sideBtn" onclick="mostrar('asignar')">➕ Asignar saldo</button>
-<button class="sideBtn" onclick="mostrar('retiros')">💸 Retiros</button>
-<button class="sideBtn" onclick="mostrar('usuarios')">👥 Usuarios</button>
+
+<button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
+<button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
+<button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
 </div>
 
-<div class="content">
+<div class="content" id="content">
 
 <!-- ASIGNAR -->
 <div id="asignar">
 <div class="card">
 <input id="usuario" placeholder="Usuario">
-<div id="saldoActual"></div>
-<input id="monto" type="number" placeholder="Monto">
+<div id="saldoActual" style="color:#00ff88"></div>
+<input id="monto" type="number" placeholder="Monto a sumar">
 <button onclick="asignarSaldo()">Asignar saldo</button>
 <div id="resultado"></div>
+</div>
+</div>
+
+<!-- RETIROS -->
+<div id="retiros" style="display:none">
+<div class="card">
+<h3>Retiros pendientes</h3>
+<div id="listaRetiros"></div>
 </div>
 </div>
 
@@ -227,17 +273,26 @@ cursor:pointer;
 <script>
 
 const { createClient } = supabase;
+
 const supabaseClient = createClient(
 "https://vntnciltzouiqkzzwuxy.supabase.co",
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-menuBtn.onclick=()=>sidebar.classList.toggle("active");
+/* ===== MENU ===== */
+menuBtn.onclick=()=>{
+sidebar.classList.toggle("active");
+content.classList.toggle("shift");
+}
 
-function mostrar(id){
-["asignar","usuarios"].forEach(s=>document.getElementById(s).style.display="none");
+/* ===== SECCIONES ===== */
+function showSection(id){
+["asignar","retiros","usuarios"].forEach(s=>{
+document.getElementById(s).style.display="none";
+});
 document.getElementById(id).style.display="block";
 sidebar.classList.remove("active");
+content.classList.remove("shift");
 }
 
 /* ===== USUARIOS ===== */
@@ -254,31 +309,34 @@ for(const u of usuarios){
 
 const { data: plan } = await supabaseClient
 .from("historial")
-.select("plan,ganancia,fecha_fin,dias_pagados,total_dias")
+.select("plan,ganancia,fecha_fin")
 .eq("usuario",u.usuario)
+.order("created_at",{ascending:false})
+.limit(1)
 .single();
 
 cont.innerHTML+=`
 <div class="usuarioCard">
 <b>${u.usuario}</b><br>
-Correo: ${u.correo || "-"}<br>
+Correo: ${u.correo || "N/A"}<br>
 Saldo: $${u.saldo}<br>
-Plan: ${plan?.plan || "-"}<br>
+Plan: ${plan ? plan.plan : "Ninguno"}<br>
 Gana: ${plan ? "$"+plan.ganancia+"/día" : "-"}<br>
-Vence: ${plan?.fecha_fin ? new Date(plan.fecha_fin).toLocaleDateString() : "-"}<br>
-Días pagados: ${plan?.dias_pagados || 0}/${plan?.total_dias || 40}<br>
+Vence: ${plan ? new Date(plan.fecha_fin).toLocaleDateString() : "-"}<br>
 
 <div class="historialBtn" onclick="abrirHistorial('${u.usuario}')">
 HISTORIAL
 </div>
+
 </div>
 `;
 }
-}
 
+}
 cargarUsuarios();
 
 /* ===== HISTORIAL ===== */
+
 async function abrirHistorial(usuario){
 
 document.getElementById("modalHistorial").style.display="flex";
@@ -286,17 +344,17 @@ document.getElementById("historialUser").innerText="Historial de "+usuario;
 
 const { data } = await supabaseClient
 .from("historial")
-.select("dias_pagados,total_dias")
+.select("dias_pagados")
 .eq("usuario",usuario)
 .single();
 
-let pagados=data?.dias_pagados || 0;
-let total=data?.total_dias || 40;
+let pagados = data?.dias_pagados || 0;
 
 let box=document.getElementById("diasBox");
 box.innerHTML="";
 
-for(let i=1;i<=total;i++){
+for(let i=1;i<=40;i++){
+
 if(i<=pagados){
 box.innerHTML+=`<div class="day pagado">Día ${i} ✔</div>`;
 }else{
@@ -306,7 +364,9 @@ Día ${i}
 <button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
 </div>`;
 }
+
 }
+
 }
 
 async function pagarDia(usuario){
@@ -325,7 +385,6 @@ await supabaseClient
 .eq("usuario",usuario);
 
 abrirHistorial(usuario);
-cargarUsuarios();
 }
 
 function cerrarHistorial(){
