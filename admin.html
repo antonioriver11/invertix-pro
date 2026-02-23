@@ -264,4 +264,34 @@ document.getElementById("usersList").innerHTML = html;
 cargarUsuarios();
 </script>
 </body>
+  <div style="display:flex;min-height:100vh;">
+
+<!-- SIDEBAR -->
+<div style="width:220px;background:#020617;padding:20px;">
+
+<h3 style="color:#00ff88;margin-bottom:20px;">⚙️ Opciones</h3>
+
+<button onclick="mostrarSeccion('asignar')" class="menuBtn">➕ Asignar saldo</button>
+<button onclick="mostrarSeccion('retiros')" class="menuBtn">💸 Retiros</button>
+<button onclick="mostrarSeccion('usuarios')" class="menuBtn">👥 Usuarios</button>
+
+</div>
+
+<!-- CONTENIDO -->
+<div style="flex:1;padding:25px;">
+
+<div id="seccion-asignar">
+<!-- AQUI VA TU ASIGNAR SALDO -->
+</div>
+
+<div id="seccion-retiros" style="display:none;">
+<!-- AQUI VA TU LISTA DE RETIROS -->
+</div>
+
+<div id="seccion-usuarios" style="display:none;">
+<!-- AQUI VA TU LISTA DE USUARIOS -->
+</div>
+
+</div>
+  </div>
 </html>
