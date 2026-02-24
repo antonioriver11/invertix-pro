@@ -278,7 +278,8 @@ const supabaseClient = createClient(
 "https://vntnciltzouiqkzzwuxy.supabase.co",
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
-// MOSTRAR SALDO AUTOMÁTICO
+
+/* ===== MOSTRAR SALDO AUTOMÁTICO ===== */
 document.getElementById("usuario").addEventListener("input", async ()=>{
 
 let usuario = document.getElementById("usuario").value.trim();
@@ -298,6 +299,7 @@ document.getElementById("saldoActual").innerText =
 data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
 
 });
+
 /* ===== MENU ===== */
 menuBtn.onclick=()=>{
 sidebar.classList.toggle("active");
@@ -319,8 +321,7 @@ async function cargarUsuarios(){
 
 const { data: usuarios } = await supabaseClient
 .from("usuarios")
-.select("usuario,correo,saldo")
-.order("usuario",{ascending:true});
+.select("usuario,correo,saldo");
 
 let cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
@@ -410,7 +411,8 @@ abrirHistorial(usuario);
 function cerrarHistorial(){
 document.getElementById("modalHistorial").style.display="none";
 }
-// ASIGNAR SALDO
+
+/* ===== ASIGNAR SALDO ===== */
 async function asignarSaldo(){
 
 let usuario = document.getElementById("usuario").value.trim();
@@ -439,14 +441,18 @@ await supabaseClient
 .update({ saldo: nuevo })
 .eq("usuario", usuario);
 
+// refrescar lista
+cargarUsuarios();
+
 document.getElementById("resultado").innerText =
 "Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
-  // refrescar saldo visible
-document.getElementById("saldoActual").innerText = "Saldo actual: $" + nuevo;
-cargarUsuarios();
+
+document.getElementById("saldoActual").innerText =
+"Saldo actual: $" + nuevo;
 
 document.getElementById("monto").value = "";
 }
+
 </script>
 
 </body>
