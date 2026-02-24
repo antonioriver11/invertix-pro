@@ -278,7 +278,26 @@ const supabaseClient = createClient(
 "https://vntnciltzouiqkzzwuxy.supabase.co",
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
+// MOSTRAR SALDO AUTOMÁTICO
+document.getElementById("usuario").addEventListener("input", async ()=>{
 
+let usuario = document.getElementById("usuario").value.trim();
+
+if(usuario.length < 1){
+document.getElementById("saldoActual").innerText = "";
+return;
+}
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario", usuario)
+.single();
+
+document.getElementById("saldoActual").innerText =
+data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
+
+});
 /* ===== MENU ===== */
 menuBtn.onclick=()=>{
 sidebar.classList.toggle("active");
@@ -390,7 +409,40 @@ abrirHistorial(usuario);
 function cerrarHistorial(){
 document.getElementById("modalHistorial").style.display="none";
 }
+// ASIGNAR SALDO
+async function asignarSaldo(){
 
+let usuario = document.getElementById("usuario").value.trim();
+let monto = Number(document.getElementById("monto").value);
+
+if(!usuario || monto <= 0){
+alert("Datos inválidos");
+return;
+}
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario", usuario)
+.single();
+
+if(!data){
+alert("Usuario no existe");
+return;
+}
+
+let nuevo = Number(data.saldo) + monto;
+
+await supabaseClient
+.from("usuarios")
+.update({ saldo: nuevo })
+.eq("usuario", usuario);
+
+document.getElementById("resultado").innerText =
+"Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
+
+document.getElementById("monto").value = "";
+}
 </script>
 
 </body>
