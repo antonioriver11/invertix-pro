@@ -37,14 +37,7 @@ font-size:22px;
 cursor:pointer;
 }
 
-header h2{
-margin:0;
-}
-
-/* ===== LAYOUT ===== */
-.container{
-display:flex;
-}
+header h2{margin:0;}
 
 /* ===== SIDEBAR ===== */
 .sidebar{
@@ -56,19 +49,11 @@ height:100vh;
 background:#020617;
 padding:20px;
 transform:translateX(-100%);
-transition:transform .35s ease;
+transition:.3s;
 z-index:1000;
 }
 
-.sidebar.active{
-transform:translateX(0);
-}
-
-.sidebar h3{
-color:#00ff88;
-text-align:center;
-margin-bottom:25px;
-}
+.sidebar.active{transform:translateX(0);}
 
 .sideBtn{
 width:100%;
@@ -78,7 +63,6 @@ border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
-font-size:15px;
 cursor:pointer;
 text-align:left;
 }
@@ -90,24 +74,18 @@ color:black;
 
 /* ===== CONTENT ===== */
 .content{
-margin-left:0;
 padding:20px;
-width:100%;
-transition:margin-left .35s ease;
+transition:.3s;
 }
 
-.content.shift{
-margin-left:230px;
-}
+.content.shift{margin-left:230px;}
 
-/* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
 border-radius:12px;
 max-width:420px;
 margin:auto;
-margin-bottom:25px;
 }
 
 input,button{
@@ -129,88 +107,27 @@ font-weight:bold;
 cursor:pointer;
 }
 
-/* ===== EXTRAS ===== */
-.retiro{
+/* ===== HISTORIAL ADMIN ===== */
+
+.historialAdmin{
+overflow:hidden;
+max-height:0;
+transition:max-height .5s ease;
+}
+
+.historialAdmin.active{
+max-height:400px;
+}
+
+.movimiento{
 background:#1f2933;
-padding:15px;
-border-radius:10px;
-margin-top:12px;
-}
-
-.usuarioCard{
-background:#1f2933;
-padding:15px;
-border-radius:10px;
-margin-top:12px;
-line-height:1.6;
-}
-
-.aprobar{background:#00ff88;}
-.rechazar{background:#ff4d4d;color:white;}
-
-/* ===== BOTON HISTORIAL ===== */
-.historialBtn{
-margin-top:8px;
-display:inline-block;
-padding:6px 14px;
-border-radius:8px;
-background:#020617;
-color:#00ff88;
-font-size:12px;
-cursor:pointer;
-border:2px solid;
-animation:led 2s linear infinite;
-}
-
-@keyframes led{
-0%{border-color:#00ff88;}
-50%{border-color:#00ffff;}
-100%{border-color:#00ff88;}
-}
-
-/* ===== MODAL ===== */
-.modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.7);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:5000;
-}
-
-.modalBox{
-background:#111827;
-padding:20px;
-width:90%;
-max-width:400px;
-border-radius:12px;
-max-height:80vh;
-overflow:auto;
-}
-
-.day{
-background:#374151;
 padding:10px;
 border-radius:8px;
-margin-bottom:6px;
-display:flex;
-justify-content:space-between;
-align-items:center;
+margin-bottom:8px;
+font-size:14px;
 }
 
-.pagado{background:#065f46;}
-
-.pagarBtn{
-background:#facc15;
-border:none;
-padding:5px 10px;
-border-radius:6px;
-cursor:pointer;
-}
+.montoPlus{color:#00ff88;}
 
 </style>
 </head>
@@ -223,10 +140,7 @@ cursor:pointer;
 </header>
 
 <div class="sidebar" id="sidebar">
-<h3>INVERTIX ADMIN</h3>
-
 <button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
-<button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
 <button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
 </div>
 
@@ -234,40 +148,31 @@ cursor:pointer;
 
 <!-- ASIGNAR -->
 <div id="asignar">
+
 <div class="card">
+
 <input id="usuario" placeholder="Usuario">
-<div id="saldoActual" style="color:#00ff88"></div>
+<div id="saldoActual"></div>
+
+<!-- HISTORIAL -->
+<div class="historialAdmin" id="historialAdmin"></div>
+
 <input id="monto" type="number" placeholder="Monto a sumar">
 <button onclick="asignarSaldo()">Asignar saldo</button>
+
 <div id="resultado"></div>
-</div>
+
 </div>
 
-<!-- RETIROS -->
-<div id="retiros" style="display:none">
-<div class="card">
-<h3>Retiros pendientes</h3>
-<div id="listaRetiros"></div>
-</div>
 </div>
 
 <!-- USUARIOS -->
 <div id="usuarios" style="display:none">
 <div class="card">
-<h3>Usuarios</h3>
 <div id="listaUsuarios"></div>
 </div>
 </div>
 
-</div>
-
-<!-- MODAL -->
-<div class="modal" id="modalHistorial">
-<div class="modalBox">
-<h3 id="historialUser"></h3>
-<div id="diasBox"></div>
-<button onclick="cerrarHistorial()">Cerrar</button>
-</div>
 </div>
 
 <script>
@@ -279,146 +184,85 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-/* ===== MOSTRAR SALDO AUTOMÁTICO ===== */
-document.getElementById("usuario").addEventListener("input", async ()=>{
-
-let usuario = document.getElementById("usuario").value.trim();
-
-if(usuario.length < 1){
-document.getElementById("saldoActual").innerText = "";
-return;
-}
-
-const { data } = await supabaseClient
-.from("usuarios")
-.select("saldo")
-.eq("usuario", usuario)
-.single();
-
-document.getElementById("saldoActual").innerText =
-data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
-
-});
-
 /* ===== MENU ===== */
 menuBtn.onclick=()=>{
+sidebar.class = document.getElementById("sidebar");
+content = document.getElementById("content");
 sidebar.classList.toggle("active");
 content.classList.toggle("shift");
 }
 
 /* ===== SECCIONES ===== */
 function showSection(id){
-["asignar","retiros","usuarios"].forEach(s=>{
+["asignar","usuarios"].forEach(s=>{
 document.getElementById(s).style.display="none";
 });
 document.getElementById(id).style.display="block";
-sidebar.classList.remove("active");
-content.classList.remove("shift");
 }
 
-/* ===== USUARIOS ===== */
-async function cargarUsuarios(){
+/* ===== MOSTRAR SALDO + HISTORIAL ===== */
 
-const { data: usuarios } = await supabaseClient
+document.getElementById("usuario").addEventListener("input", async ()=>{
+
+let usuario = usuarioInput = document.getElementById("usuario").value.trim();
+
+if(usuario==""){
+document.getElementById("saldoActual").innerText="";
+return;
+}
+
+const { data } = await supabaseClient
 .from("usuarios")
-.select("usuario,correo,saldo");
-
-let cont=document.getElementById("listaUsuarios");
-cont.innerHTML="";
-
-for(const u of usuarios){
-
-const { data: plan } = await supabaseClient
-.from("historial")
-.select("plan,ganancia,fecha_fin")
-.eq("usuario",u.usuario)
-.order("created_at",{ascending:false})
-.limit(1)
+.select("saldo")
+.eq("usuario",usuario)
 .single();
 
-cont.innerHTML+=`
-<div class="usuarioCard">
-<b>${u.usuario}</b><br>
-Correo: ${u.correo || "N/A"}<br>
-Saldo: $${u.saldo}<br>
-Plan: ${plan ? plan.plan : "Ninguno"}<br>
-Gana: ${plan ? "$"+plan.ganancia+"/día" : "-"}<br>
-Vence: ${plan ? new Date(plan.fecha_fin).toLocaleDateString() : "-"}<br>
+if(data){
+document.getElementById("saldoActual").innerText="Saldo actual: $"+data.saldo;
+cargarHistorialAdmin(usuario);
+}
 
-<div class="historialBtn" onclick="abrirHistorial('${u.usuario}')">
-HISTORIAL
-</div>
+});
 
+/* ===== HISTORIAL ADMIN ===== */
+
+async function cargarHistorialAdmin(usuario){
+
+const { data } = await supabaseClient
+.from("movimientos_admin")
+.select("*")
+.eq("usuario",usuario)
+.order("fecha",{ascending:false});
+
+let box=document.getElementById("historialAdmin");
+box.innerHTML="";
+box.classList.add("active");
+
+if(!data || data.length==0){
+box.innerHTML="<small>Sin movimientos</small>";
+return;
+}
+
+data.forEach(m=>{
+box.innerHTML+=`
+<div class="movimiento">
+<b>${new Date(m.fecha).toLocaleString()}</b><br>
+<span class="montoPlus">+ $${m.monto}</span><br>
+Admin: ${m.admin}
 </div>
 `;
-}
+});
 
-}
-cargarUsuarios();
-
-/* ===== HISTORIAL ===== */
-
-async function abrirHistorial(usuario){
-
-document.getElementById("modalHistorial").style.display="flex";
-document.getElementById("historialUser").innerText="Historial de "+usuario;
-
-const { data } = await supabaseClient
-.from("historial")
-.select("dias_pagados")
-.eq("usuario",usuario)
-.single();
-
-let pagados = data?.dias_pagados || 0;
-
-let box=document.getElementById("diasBox");
-box.innerHTML="";
-
-for(let i=1;i<=40;i++){
-
-if(i<=pagados){
-box.innerHTML+=`<div class="day pagado">Día ${i} ✔</div>`;
-}else{
-box.innerHTML+=`
-<div class="day">
-Día ${i}
-<button class="pagarBtn" onclick="pagarDia('${usuario}')">PAGAR</button>
-</div>`;
-}
-
-}
-
-}
-
-async function pagarDia(usuario){
-
-const { data } = await supabaseClient
-.from("historial")
-.select("dias_pagados")
-.eq("usuario",usuario)
-.single();
-
-let nuevo=(data?.dias_pagados||0)+1;
-
-await supabaseClient
-.from("historial")
-.update({dias_pagados:nuevo})
-.eq("usuario",usuario);
-
-abrirHistorial(usuario);
-}
-
-function cerrarHistorial(){
-document.getElementById("modalHistorial").style.display="none";
 }
 
 /* ===== ASIGNAR SALDO ===== */
+
 async function asignarSaldo(){
 
-let usuario = document.getElementById("usuario").value.trim();
-let monto = Number(document.getElementById("monto").value);
+let usuario=document.getElementById("usuario").value.trim();
+let monto=Number(document.getElementById("monto").value);
 
-if(!usuario || monto <= 0){
+if(!usuario || monto<=0){
 alert("Datos inválidos");
 return;
 }
@@ -426,34 +270,66 @@ return;
 const { data } = await supabaseClient
 .from("usuarios")
 .select("saldo")
-.eq("usuario", usuario)
+.eq("usuario",usuario)
 .single();
 
-if(!data){
-alert("Usuario no existe");
-return;
-}
-
-let nuevo = Number(data.saldo) + monto;
+let nuevo=Number(data.saldo)+monto;
 
 await supabaseClient
 .from("usuarios")
-.update({ saldo: nuevo })
-.eq("usuario", usuario);
+.update({saldo:nuevo})
+.eq("usuario",usuario);
 
-// refrescar lista
+/* GUARDAR MOVIMIENTO */
+
+await supabaseClient
+.from("movimientos_admin")
+.insert([{
+usuario:usuario,
+monto:monto,
+admin:"Alvinadmin",
+fecha:new Date()
+}]);
+
+document.getElementById("resultado").innerText=
+"Saldo actualizado ✅ Nuevo saldo: $"+nuevo;
+
+document.getElementById("saldoActual").innerText=
+"Saldo actual: $"+nuevo;
+
+document.getElementById("monto").value="";
+
+cargarHistorialAdmin(usuario);
 cargarUsuarios();
 
-document.getElementById("resultado").innerText =
-"Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
-
-document.getElementById("saldoActual").innerText =
-"Saldo actual: $" + nuevo;
-
-document.getElementById("monto").value = "";
 }
+
+/* ===== USUARIOS ===== */
+
+async function cargarUsuarios(){
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("usuario,correo,saldo");
+
+let cont=document.getElementById("listaUsuarios");
+cont.innerHTML="";
+
+data.forEach(u=>{
+cont.innerHTML+=`
+<div style="background:#1f2933;padding:10px;border-radius:8px;margin-bottom:10px">
+<b>${u.usuario}</b><br>
+Correo: ${u.correo}<br>
+Saldo: $${u.saldo}
+</div>
+`;
+});
+
+}
+
+cargarUsuarios();
 
 </script>
 
 </body>
-</html>
+  </html>
