@@ -15,7 +15,6 @@ margin:0;
 font-family:Arial;
 background:#0b1120;
 color:white;
-overflow-x:hidden;
 }
 
 /* ===== HEADER ===== */
@@ -36,8 +35,6 @@ background:#00ff88;
 font-size:22px;
 cursor:pointer;
 }
-
-header h2{margin:0;}
 
 /* ===== SIDEBAR ===== */
 .sidebar{
@@ -81,14 +78,34 @@ padding:20px;
 border-radius:12px;
 max-width:420px;
 margin:auto;
+margin-bottom:25px;
 }
 
+input,button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:8px;
+}
+
+input{
+background:#1f2933;
+color:white;
+}
+
+button{
+background:#00ff88;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* ===== USER CARD ===== */
 .usuarioCard{
 background:#1f2933;
 padding:15px;
 border-radius:10px;
 margin-top:12px;
-line-height:1.6;
 }
 
 /* ===== HISTORIAL BTN ===== */
@@ -101,13 +118,6 @@ background:#020617;
 color:#00ff88;
 border:2px solid;
 cursor:pointer;
-animation:led 2s linear infinite;
-}
-
-@keyframes led{
-0%{border-color:#00ff88;}
-50%{border-color:#00ffff;}
-100%{border-color:#00ff88;}
 }
 
 /* ===== MODAL ===== */
@@ -136,7 +146,6 @@ border-radius:8px;
 margin-bottom:6px;
 display:flex;
 justify-content:space-between;
-align-items:center;
 }
 
 .pagado{background:#065f46;}
@@ -162,13 +171,25 @@ cursor:pointer;
 </header>
 
 <div class="sidebar" id="sidebar">
+<button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
 <button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
 </div>
 
 <div class="content" id="content">
 
+<!-- ASIGNAR -->
+<div id="asignar">
+<div class="card">
+<input id="usuarioInput" placeholder="Usuario">
+<div id="saldoActual"></div>
+<input id="montoInput" type="number" placeholder="Monto a sumar">
+<button onclick="asignarSaldo()">Asignar saldo</button>
+<div id="resultado"></div>
+</div>
+</div>
+
 <!-- USUARIOS -->
-<div id="usuarios">
+<div id="usuarios" style="display:none">
 <div class="card">
 <h3>Usuarios</h3>
 <div id="listaUsuarios"></div>
@@ -177,7 +198,7 @@ cursor:pointer;
 
 </div>
 
-<!-- MODAL HISTORIAL -->
+<!-- MODAL -->
 <div class="modal" id="modalHistorial">
 <div class="modalBox">
 <h3 id="historialUser"></h3>
@@ -188,9 +209,7 @@ cursor:pointer;
 
 <script>
 
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
+const supabaseClient = supabase.createClient(
 "https://vntnciltzouiqkzzwuxy.supabase.co",
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
@@ -207,18 +226,47 @@ document.querySelectorAll(".content > div").forEach(d=>d.style.display="none");
 document.getElementById(id).style.display="block";
 }
 
-/* ===========================
-   USUARIOS CON MULTIPLES PLANES
-=========================== */
+/* MOSTRAR SALDO */
+usuarioInput.addEventListener("input", async ()=>{
+const { data } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario",usuarioInput.value)
+.single();
 
+saldoActual.innerText=data ? "Saldo actual: $"+data.saldo : "";
+});
+
+/* ASIGNAR SALDO */
+async function asignarSaldo(){
+
+let usuario=usuarioInput.value;
+let monto=Number(montoInput.value);
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("saldo")
+.eq("usuario",usuario)
+.single();
+
+let nuevo = Number(data.saldo)+monto;
+
+await supabaseClient
+.from("usuarios")
+.update({saldo:nuevo})
+.eq("usuario",usuario);
+
+resultado.innerText="Nuevo saldo: $"+nuevo;
+}
+
+/* USUARIOS + PLANES */
 async function cargarUsuarios(){
 
 const { data: usuarios } = await supabaseClient
 .from("usuarios")
 .select("usuario,correo,saldo");
 
-let cont=document.getElementById("listaUsuarios");
-cont.innerHTML="";
+listaUsuarios.innerHTML="";
 
 for(const u of usuarios){
 
@@ -228,12 +276,11 @@ const { data: planes } = await supabaseClient
 .eq("usuario",u.usuario)
 .eq("estado","activo");
 
-cont.innerHTML+=`
+listaUsuarios.innerHTML+=`
 <div class="usuarioCard">
 <b>${u.usuario}</b><br>
 Correo: ${u.correo||"N/A"}<br>
 Saldo: $${u.saldo}<br>
-
 Plan: ${planes?.length ? planes.map(p=>p.plan).join(" | ") : "Ninguno"}<br>
 Gana: ${planes?.length ? planes.map(p=>"$"+p.ganancia+"/día").join(" | ") : "-"}<br>
 Vence: ${planes?.length ? planes.map(p=>new Date(p.fecha_fin).toLocaleDateString()).join(" | ") : "-"}<br>
@@ -247,10 +294,7 @@ HISTORIAL
 }
 cargarUsuarios();
 
-/* ===========================
-      HISTORIAL POR DIAS
-=========================== */
-
+/* HISTORIAL */
 async function abrirHistorial(usuario){
 
 modalHistorial.style.display="flex";
@@ -263,43 +307,30 @@ const { data: pagos } = await supabaseClient
 
 diasBox.innerHTML="";
 
-for(let dia=1;dia<=40;dia++){
+for(let d=1;d<=40;d++){
 
-let pago = pagos?.find(p=>p.dia===dia);
+let p=pagos?.find(x=>x.dia===d);
 
-if(pago){
-
-if(pago.estado==="pagado")
-diasBox.innerHTML+=`<div class="day pagado">Día ${dia} - PAGADO</div>`;
-
-else if(pago.estado==="fallido")
-diasBox.innerHTML+=`<div class="day fallido">Día ${dia} - FALLIDO</div>`;
-
+if(p && p.estado==="pagado")
+diasBox.innerHTML+=`<div class="day pagado">Día ${d} PAGADO</div>`;
+else if(p && p.estado==="fallido")
+diasBox.innerHTML+=`<div class="day fallido">Día ${d} FALLIDO</div>`;
 else
-diasBox.innerHTML+=`<div class="day pendiente">Día ${dia} - PENDIENTE</div>`;
-
-}else{
-
 diasBox.innerHTML+=`
 <div class="day pendiente">
-Día ${dia} - PENDIENTE
-<button class="pagarBtn" onclick="pagarDia('${usuario}',${dia})">PAGAR</button>
+Día ${d} PENDIENTE
+<button class="pagarBtn" onclick="pagarDia('${usuario}',${d})">PAGAR</button>
 </div>`;
 }
-
 }
 
-}
-
+/* PAGAR */
 async function pagarDia(usuario,dia){
 
 await supabaseClient
 .from("pagos_diarios")
 .upsert({
-usuario,
-dia,
-estado:"pagado",
-fecha_pago:new Date()
+usuario,dia,estado:"pagado",fecha_pago:new Date()
 });
 
 abrirHistorial(usuario);
