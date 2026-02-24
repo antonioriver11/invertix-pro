@@ -8,7 +8,6 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
-
 /* ===== BASE ===== */
 body{
 margin:0;
@@ -108,7 +107,6 @@ cursor:pointer;
 }
 
 /* ===== HISTORIAL ADMIN ===== */
-
 .historialAdmin{
 overflow:hidden;
 max-height:0;
@@ -116,7 +114,7 @@ transition:max-height .5s ease;
 }
 
 .historialAdmin.active{
-max-height:400px;
+max-height:350px;
 }
 
 .movimiento{
@@ -128,7 +126,6 @@ font-size:14px;
 }
 
 .montoPlus{color:#00ff88;}
-
 </style>
 </head>
 
@@ -186,8 +183,8 @@ const supabaseClient = createClient(
 
 /* ===== MENU ===== */
 menuBtn.onclick=()=>{
-sidebar.class = document.getElementById("sidebar");
-content = document.getElementById("content");
+let sidebar=document.getElementById("sidebar");
+let content=document.getElementById("content");
 sidebar.classList.toggle("active");
 content.classList.toggle("shift");
 }
@@ -201,13 +198,13 @@ document.getElementById(id).style.display="block";
 }
 
 /* ===== MOSTRAR SALDO + HISTORIAL ===== */
-
 document.getElementById("usuario").addEventListener("input", async ()=>{
 
-let usuario = usuarioInput = document.getElementById("usuario").value.trim();
+let usuario=document.getElementById("usuario").value.trim();
 
 if(usuario==""){
 document.getElementById("saldoActual").innerText="";
+document.getElementById("historialAdmin").classList.remove("active");
 return;
 }
 
@@ -225,7 +222,6 @@ cargarHistorialAdmin(usuario);
 });
 
 /* ===== HISTORIAL ADMIN ===== */
-
 async function cargarHistorialAdmin(usuario){
 
 const { data } = await supabaseClient
@@ -249,14 +245,12 @@ box.innerHTML+=`
 <b>${new Date(m.fecha).toLocaleString()}</b><br>
 <span class="montoPlus">+ $${m.monto}</span><br>
 Admin: ${m.admin}
-</div>
-`;
+</div>`;
 });
 
 }
 
 /* ===== ASIGNAR SALDO ===== */
-
 async function asignarSaldo(){
 
 let usuario=document.getElementById("usuario").value.trim();
@@ -273,6 +267,11 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .single();
 
+if(!data){
+alert("Usuario no existe");
+return;
+}
+
 let nuevo=Number(data.saldo)+monto;
 
 await supabaseClient
@@ -281,14 +280,12 @@ await supabaseClient
 .eq("usuario",usuario);
 
 /* GUARDAR MOVIMIENTO */
-
 await supabaseClient
 .from("movimientos_admin")
 .insert([{
 usuario:usuario,
 monto:monto,
-admin:"Alvinadmin",
-fecha:new Date()
+admin:"Alvinadmin"
 }]);
 
 document.getElementById("resultado").innerText=
@@ -305,7 +302,6 @@ cargarUsuarios();
 }
 
 /* ===== USUARIOS ===== */
-
 async function cargarUsuarios(){
 
 const { data } = await supabaseClient
@@ -321,8 +317,7 @@ cont.innerHTML+=`
 <b>${u.usuario}</b><br>
 Correo: ${u.correo}<br>
 Saldo: $${u.saldo}
-</div>
-`;
+</div>`;
 });
 
 }
@@ -332,4 +327,4 @@ cargarUsuarios();
 </script>
 
 </body>
-  </html>
+</html>
