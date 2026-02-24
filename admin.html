@@ -37,9 +37,7 @@ font-size:22px;
 cursor:pointer;
 }
 
-header h2{
-margin:0;
-}
+header h2{margin:0;}
 
 /* ===== SIDEBAR ===== */
 .sidebar{
@@ -55,9 +53,7 @@ transition:transform .35s ease;
 z-index:1000;
 }
 
-.sidebar.active{
-transform:translateX(0);
-}
+.sidebar.active{transform:translateX(0);}
 
 .sidebar h3{
 color:#00ff88;
@@ -73,15 +69,11 @@ border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
-font-size:15px;
 cursor:pointer;
 text-align:left;
 }
 
-.sideBtn:hover{
-background:#00ff88;
-color:black;
-}
+.sideBtn:hover{background:#00ff88;color:black;}
 
 /* ===== CONTENT ===== */
 .content{
@@ -90,12 +82,9 @@ padding:20px;
 width:100%;
 transition:margin-left .35s ease;
 }
+.content.shift{margin-left:230px;}
 
-.content.shift{
-margin-left:230px;
-}
-
-/* ===== CARDS ===== */
+/* ===== CARD ===== */
 .card{
 background:#111827;
 padding:20px;
@@ -113,24 +102,18 @@ border:none;
 border-radius:8px;
 }
 
-input{
-background:#1f2933;
-color:white;
-}
+input{background:#1f2933;color:white;}
+button{background:#00ff88;font-weight:bold;cursor:pointer;}
 
-button{
-background:#00ff88;
-font-weight:bold;
-cursor:pointer;
-}
-
-/* ===== MOVIMIENTOS ADMIN ===== */
+/* ===== MOVIMIENTOS ===== */
 .movimientosAdmin{
 margin-top:20px;
 background:#0f172a;
-padding:12px;
-border-radius:10px;
+border-radius:12px;
+padding:15px;
 display:none;
+position:relative;
+overflow:hidden;
 animation:fade .4s ease;
 }
 
@@ -139,31 +122,30 @@ background:#1f2933;
 padding:10px;
 border-radius:8px;
 margin-bottom:8px;
+border-left:4px solid gold;
 font-size:14px;
 }
 
 .movItem span{color:#00ff88;font-weight:bold;}
 
-@keyframes fade{
-from{opacity:0;transform:translateY(-10px);}
-to{opacity:1;transform:translateY(0);}
-}
-
-/* ===== AGUILA ===== */
 .aguila{
-position:fixed;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:80px;
-z-index:9999;
-animation:fly 1s ease forwards;
+position:absolute;
+top:-40px;
+left:-60px;
+width:200px;
+opacity:.15;
+animation:fly 6s linear infinite;
 }
 
 @keyframes fly{
-0%{transform:translate(-50%,-50%) scale(0);}
-50%{transform:translate(-50%,-50%) scale(1.2);}
-100%{transform:translate(-50%,-50%) scale(1);}
+0%{transform:translateX(0) scale(.9);}
+50%{transform:translateX(180px) scale(1);}
+100%{transform:translateX(0) scale(.9);}
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
 }
 
 </style>
@@ -188,6 +170,7 @@ animation:fly 1s ease forwards;
 <!-- ASIGNAR -->
 <div id="asignar">
 <div class="card">
+
 <input id="usuario" placeholder="Usuario">
 <div id="saldoActual" style="color:#00ff88"></div>
 
@@ -202,22 +185,11 @@ animation:fly 1s ease forwards;
 </div>
 </div>
 
-<!-- RETIROS -->
-<div id="retiros" style="display:none">
-<div class="card">
-<h3>Retiros pendientes</h3>
-<div id="listaRetiros"></div>
-</div>
-</div>
-
 <!-- USUARIOS -->
 <div id="usuarios" style="display:none">
 <div class="card">
-<h3>Usuarios</h3>
 <div id="listaUsuarios"></div>
 </div>
-</div>
-
 </div>
 
 <script>
@@ -229,37 +201,14 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
-/* ===== AGUILA ===== */
-window.onload=()=>{
-let a=document.createElement("div");
-a.className="aguila";
-a.innerHTML="🦅";
-document.body.appendChild(a);
-setTimeout(()=>a.remove(),1000);
-}
-
-/* ===== MENU ===== */
-menuBtn.onclick=()=>{
-sidebar.classList.toggle("active");
-content.classList.toggle("shift");
-}
-
-/* ===== SECCIONES ===== */
-function showSection(id){
-["asignar","retiros","usuarios"].forEach(s=>{
-document.getElementById(s).style.display="none";
-});
-document.getElementById(id).style.display="block";
-}
-
-/* ===== MOSTRAR SALDO + MOVIMIENTOS ===== */
+/* MOSTRAR SALDO */
 document.getElementById("usuario").addEventListener("input", async ()=>{
 
 let usuario=document.getElementById("usuario").value.trim();
 
-if(usuario==""){
-document.getElementById("saldoActual").innerText="";
-document.getElementById("movimientosAdmin").style.display="none";
+if(!usuario){
+saldoActual.innerText="";
+movimientosAdmin.style.display="none";
 return;
 }
 
@@ -270,13 +219,16 @@ const { data } = await supabaseClient
 .single();
 
 if(data){
-document.getElementById("saldoActual").innerText="Saldo actual: $"+data.saldo;
+saldoActual.innerText="Saldo actual: $"+data.saldo;
 cargarMovimientos(usuario);
+}else{
+saldoActual.innerText="Usuario no encontrado";
+movimientosAdmin.style.display="none";
 }
 
 });
 
-/* ===== CARGAR MOVIMIENTOS ===== */
+/* MOVIMIENTOS */
 async function cargarMovimientos(usuario){
 
 const { data } = await supabaseClient
@@ -285,7 +237,7 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .order("fecha",{ascending:false});
 
-let box=document.getElementById("movimientosAdmin");
+let box=movimientosAdmin;
 box.innerHTML="";
 
 if(!data || data.length==0){
@@ -294,6 +246,12 @@ return;
 }
 
 box.style.display="block";
+
+box.innerHTML+=`
+<svg class="aguila" viewBox="0 0 512 512">
+<path fill="gold" d="M256 32l64 128 128 32-96 96 24 144-120-64-120 64 24-144-96-96 128-32z"/>
+</svg>
+`;
 
 data.forEach(m=>{
 box.innerHTML+=`
@@ -307,13 +265,13 @@ Admin: ${m.admin}
 
 }
 
-/* ===== ASIGNAR SALDO ===== */
+/* ASIGNAR SALDO */
 async function asignarSaldo(){
 
 let usuario=document.getElementById("usuario").value.trim();
 let monto=Number(document.getElementById("monto").value);
 
-if(!usuario || monto<=0){
+if(!usuario||monto<=0){
 alert("Datos inválidos");
 return;
 }
@@ -331,19 +289,14 @@ await supabaseClient
 .update({saldo:nuevo})
 .eq("usuario",usuario);
 
-/* GUARDAR MOVIMIENTO */
 await supabaseClient
 .from("movimientos_admin")
 .insert([{usuario:usuario,monto:monto,admin:"Alvinadmin"}]);
 
-document.getElementById("resultado").innerText=
-"Saldo actualizado ✅ Nuevo saldo: $"+nuevo;
+saldoActual.innerText="Saldo actual: $"+nuevo;
+resultado.innerText="Saldo actualizado ✅ Nuevo saldo: $"+nuevo;
 
-document.getElementById("saldoActual").innerText=
-"Saldo actual: $"+nuevo;
-
-document.getElementById("monto").value="";
-
+monto.value="";
 cargarMovimientos(usuario);
 }
 
