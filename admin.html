@@ -440,6 +440,9 @@ await supabaseClient
 
 document.getElementById("resultado").innerText =
 "Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
+  // refrescar saldo visible
+document.getElementById("saldoActual").innerText = "Saldo actual: $" + nuevo;
+cargarUsuarios();
 
 document.getElementById("monto").value = "";
 }
