@@ -8,6 +8,7 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
 <style>
+
 /* ===== BASE ===== */
 body{
 margin:0;
@@ -36,7 +37,9 @@ font-size:22px;
 cursor:pointer;
 }
 
-header h2{margin:0;}
+header h2{
+margin:0;
+}
 
 /* ===== SIDEBAR ===== */
 .sidebar{
@@ -48,11 +51,19 @@ height:100vh;
 background:#020617;
 padding:20px;
 transform:translateX(-100%);
-transition:.3s;
+transition:transform .35s ease;
 z-index:1000;
 }
 
-.sidebar.active{transform:translateX(0);}
+.sidebar.active{
+transform:translateX(0);
+}
+
+.sidebar h3{
+color:#00ff88;
+text-align:center;
+margin-bottom:25px;
+}
 
 .sideBtn{
 width:100%;
@@ -62,6 +73,7 @@ border:none;
 border-radius:10px;
 background:#0f172a;
 color:white;
+font-size:15px;
 cursor:pointer;
 text-align:left;
 }
@@ -73,18 +85,24 @@ color:black;
 
 /* ===== CONTENT ===== */
 .content{
+margin-left:0;
 padding:20px;
-transition:.3s;
+width:100%;
+transition:margin-left .35s ease;
 }
 
-.content.shift{margin-left:230px;}
+.content.shift{
+margin-left:230px;
+}
 
+/* ===== CARDS ===== */
 .card{
 background:#111827;
 padding:20px;
 border-radius:12px;
 max-width:420px;
 margin:auto;
+margin-bottom:25px;
 }
 
 input,button{
@@ -106,18 +124,17 @@ font-weight:bold;
 cursor:pointer;
 }
 
-/* ===== HISTORIAL ADMIN ===== */
-.historialAdmin{
-overflow:hidden;
-max-height:0;
-transition:max-height .5s ease;
+/* ===== MOVIMIENTOS ADMIN ===== */
+.movimientosAdmin{
+margin-top:20px;
+background:#0f172a;
+padding:12px;
+border-radius:10px;
+display:none;
+animation:fade .4s ease;
 }
 
-.historialAdmin.active{
-max-height:350px;
-}
-
-.movimiento{
+.movItem{
 background:#1f2933;
 padding:10px;
 border-radius:8px;
@@ -125,7 +142,30 @@ margin-bottom:8px;
 font-size:14px;
 }
 
-.montoPlus{color:#00ff88;}
+.movItem span{color:#00ff88;font-weight:bold;}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(-10px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+/* ===== AGUILA ===== */
+.aguila{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+font-size:80px;
+z-index:9999;
+animation:fly 1s ease forwards;
+}
+
+@keyframes fly{
+0%{transform:translate(-50%,-50%) scale(0);}
+50%{transform:translate(-50%,-50%) scale(1.2);}
+100%{transform:translate(-50%,-50%) scale(1);}
+}
+
 </style>
 </head>
 
@@ -137,7 +177,9 @@ font-size:14px;
 </header>
 
 <div class="sidebar" id="sidebar">
+<h3>INVERTIX ADMIN</h3>
 <button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
+<button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
 <button class="sideBtn" onclick="showSection('usuarios')">👥 Usuarios</button>
 </div>
 
@@ -145,27 +187,33 @@ font-size:14px;
 
 <!-- ASIGNAR -->
 <div id="asignar">
-
 <div class="card">
-
 <input id="usuario" placeholder="Usuario">
-<div id="saldoActual"></div>
-
-<!-- HISTORIAL -->
-<div class="historialAdmin" id="historialAdmin"></div>
+<div id="saldoActual" style="color:#00ff88"></div>
 
 <input id="monto" type="number" placeholder="Monto a sumar">
 <button onclick="asignarSaldo()">Asignar saldo</button>
 
 <div id="resultado"></div>
 
+<!-- MOVIMIENTOS -->
+<div id="movimientosAdmin" class="movimientosAdmin"></div>
+
+</div>
 </div>
 
+<!-- RETIROS -->
+<div id="retiros" style="display:none">
+<div class="card">
+<h3>Retiros pendientes</h3>
+<div id="listaRetiros"></div>
+</div>
 </div>
 
 <!-- USUARIOS -->
 <div id="usuarios" style="display:none">
 <div class="card">
+<h3>Usuarios</h3>
 <div id="listaUsuarios"></div>
 </div>
 </div>
@@ -181,30 +229,37 @@ const supabaseClient = createClient(
 "sb_publishable_6ATm2BpqCzDh8PbHtLdsmw_KbXbgA00"
 );
 
+/* ===== AGUILA ===== */
+window.onload=()=>{
+let a=document.createElement("div");
+a.className="aguila";
+a.innerHTML="🦅";
+document.body.appendChild(a);
+setTimeout(()=>a.remove(),1000);
+}
+
 /* ===== MENU ===== */
 menuBtn.onclick=()=>{
-let sidebar=document.getElementById("sidebar");
-let content=document.getElementById("content");
 sidebar.classList.toggle("active");
 content.classList.toggle("shift");
 }
 
 /* ===== SECCIONES ===== */
 function showSection(id){
-["asignar","usuarios"].forEach(s=>{
+["asignar","retiros","usuarios"].forEach(s=>{
 document.getElementById(s).style.display="none";
 });
 document.getElementById(id).style.display="block";
 }
 
-/* ===== MOSTRAR SALDO + HISTORIAL ===== */
+/* ===== MOSTRAR SALDO + MOVIMIENTOS ===== */
 document.getElementById("usuario").addEventListener("input", async ()=>{
 
 let usuario=document.getElementById("usuario").value.trim();
 
 if(usuario==""){
 document.getElementById("saldoActual").innerText="";
-document.getElementById("historialAdmin").classList.remove("active");
+document.getElementById("movimientosAdmin").style.display="none";
 return;
 }
 
@@ -216,13 +271,13 @@ const { data } = await supabaseClient
 
 if(data){
 document.getElementById("saldoActual").innerText="Saldo actual: $"+data.saldo;
-cargarHistorialAdmin(usuario);
+cargarMovimientos(usuario);
 }
 
 });
 
-/* ===== HISTORIAL ADMIN ===== */
-async function cargarHistorialAdmin(usuario){
+/* ===== CARGAR MOVIMIENTOS ===== */
+async function cargarMovimientos(usuario){
 
 const { data } = await supabaseClient
 .from("movimientos_admin")
@@ -230,22 +285,24 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .order("fecha",{ascending:false});
 
-let box=document.getElementById("historialAdmin");
+let box=document.getElementById("movimientosAdmin");
 box.innerHTML="";
-box.classList.add("active");
 
 if(!data || data.length==0){
-box.innerHTML="<small>Sin movimientos</small>";
+box.style.display="none";
 return;
 }
 
+box.style.display="block";
+
 data.forEach(m=>{
 box.innerHTML+=`
-<div class="movimiento">
-<b>${new Date(m.fecha).toLocaleString()}</b><br>
-<span class="montoPlus">+ $${m.monto}</span><br>
+<div class="movItem">
+${new Date(m.fecha).toLocaleString()}<br>
+Ingreso: <span>+$${m.monto}</span><br>
 Admin: ${m.admin}
-</div>`;
+</div>
+`;
 });
 
 }
@@ -267,11 +324,6 @@ const { data } = await supabaseClient
 .eq("usuario",usuario)
 .single();
 
-if(!data){
-alert("Usuario no existe");
-return;
-}
-
 let nuevo=Number(data.saldo)+monto;
 
 await supabaseClient
@@ -282,11 +334,7 @@ await supabaseClient
 /* GUARDAR MOVIMIENTO */
 await supabaseClient
 .from("movimientos_admin")
-.insert([{
-usuario:usuario,
-monto:monto,
-admin:"Alvinadmin"
-}]);
+.insert([{usuario:usuario,monto:monto,admin:"Alvinadmin"}]);
 
 document.getElementById("resultado").innerText=
 "Saldo actualizado ✅ Nuevo saldo: $"+nuevo;
@@ -296,33 +344,8 @@ document.getElementById("saldoActual").innerText=
 
 document.getElementById("monto").value="";
 
-cargarHistorialAdmin(usuario);
-cargarUsuarios();
-
+cargarMovimientos(usuario);
 }
-
-/* ===== USUARIOS ===== */
-async function cargarUsuarios(){
-
-const { data } = await supabaseClient
-.from("usuarios")
-.select("usuario,correo,saldo");
-
-let cont=document.getElementById("listaUsuarios");
-cont.innerHTML="";
-
-data.forEach(u=>{
-cont.innerHTML+=`
-<div style="background:#1f2933;padding:10px;border-radius:8px;margin-bottom:10px">
-<b>${u.usuario}</b><br>
-Correo: ${u.correo}<br>
-Saldo: $${u.saldo}
-</div>`;
-});
-
-}
-
-cargarUsuarios();
 
 </script>
 
