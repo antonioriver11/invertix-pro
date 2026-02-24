@@ -136,6 +136,7 @@ border-radius:8px;
 margin-bottom:6px;
 display:flex;
 justify-content:space-between;
+align-items:center;
 }
 
 .pagado{background:#065f46;}
@@ -166,6 +167,7 @@ cursor:pointer;
 
 <div class="content" id="content">
 
+<!-- USUARIOS -->
 <div id="usuarios">
 <div class="card">
 <h3>Usuarios</h3>
@@ -175,7 +177,7 @@ cursor:pointer;
 
 </div>
 
-<!-- MODAL -->
+<!-- MODAL HISTORIAL -->
 <div class="modal" id="modalHistorial">
 <div class="modalBox">
 <h3 id="historialUser"></h3>
@@ -246,7 +248,7 @@ HISTORIAL
 cargarUsuarios();
 
 /* ===========================
-      HISTORIAL REAL
+      HISTORIAL POR DIAS
 =========================== */
 
 async function abrirHistorial(usuario){
