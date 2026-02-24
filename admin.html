@@ -319,7 +319,8 @@ async function cargarUsuarios(){
 
 const { data: usuarios } = await supabaseClient
 .from("usuarios")
-.select("usuario,correo,saldo");
+.select("usuario,correo,saldo")
+.order("usuario",{ascending:true});
 
 let cont=document.getElementById("listaUsuarios");
 cont.innerHTML="";
