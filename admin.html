@@ -492,8 +492,8 @@ await supabaseClient
   await supabaseClient
 .from("movimientos_admin")
 .insert([{
-usuario:usuario,
-monto:monto,
+usuario: usuario,
+monto: monto,
 admin:"adminalvin"
 }]);
 
@@ -511,34 +511,38 @@ document.getElementById("saldoActual").innerText =
 document.getElementById("monto").value = "";
 }
 /* ===== MOVIMIENTOS ADMIN ===== */
-
 async function cargarMovimientos(usuario){
 
-const { data } = await supabaseClient
+const { data, error } = await supabaseClient
 .from("movimientos_admin")
-.select("*")
-.eq("usuario",usuario)
-.order("fecha",{ascending:false});
+.select("usuario,monto,admin,fecha")
+.eq("usuario", usuario)
+.order("fecha", { ascending: false });
 
-let box=document.getElementById("movimientosAdmin");
-box.innerHTML="";
-
-if(!data || data.length==0){
-box.style.display="none";
+if(error){
+console.log("Error movimientos:", error);
 return;
 }
 
-box.style.display="block";
+let box = document.getElementById("movimientosAdmin");
+box.innerHTML = "";
 
-/* Aguila SVG */
-box.innerHTML+=`
+if(!data || data.length === 0){
+box.style.display = "none";
+return;
+}
+
+box.style.display = "block";
+
+/* Aguila */
+box.innerHTML += `
 <svg class="aguila" viewBox="0 0 512 512">
 <path fill="gold" d="M256 32l64 128 128 32-96 96 24 144-120-64-120 64 24-144-96-96 128-32z"/>
 </svg>
 `;
 
-data.forEach(m=>{
-box.innerHTML+=`
+data.forEach(m => {
+box.innerHTML += `
 <div class="movItem">
 ${new Date(m.fecha).toLocaleString()}<br>
 Ingreso: <span>+$${m.monto}</span><br>
@@ -548,6 +552,7 @@ Admin: ${m.admin}
 });
 
 }
+
 </script>
 
 </body>
