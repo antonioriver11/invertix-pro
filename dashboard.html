@@ -250,9 +250,16 @@ await supabaseClient.from("usuarios")
 /* AGREGADO 30 DIAS */
 let fechaFin = new Date();
 fechaFin.setDate(fechaFin.getDate() + 30);
-
-await supabaseClient.from("historial")
-.insert({usuario:usuarioActivo,plan,precio,ganancia,fecha_fin:fechaFin.toISOString()});
+await supabaseClient.from("historial").insert({
+usuario: usuarioActivo,
+plan: plan,
+precio: precio,
+ganancia: ganancia,
+fecha_fin: fechaFin.toISOString(),
+total_dias: 30,
+dias_pagados: 0,
+activa: true
+});
 
 mostrarModal("Éxito","Plan comprado");
 
