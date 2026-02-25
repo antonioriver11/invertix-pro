@@ -249,7 +249,7 @@ await supabaseClient.from("usuarios")
 
 /* AGREGADO 30 DIAS */
 let fechaFin = new Date();
-fechaFin.setDate(fechaFin.getDate() + 30);
+fechaFin.setDate(fechaFin.getDate() + 5);
 await supabaseClient.from("historial").insert({
 usuario: usuarioActivo,
 plan: plan,
