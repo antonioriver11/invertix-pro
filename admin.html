@@ -167,7 +167,51 @@ animation:led 2s linear infinite;
 50%{border-color:#00ffff;}
 100%{border-color:#00ff88;}
 }
+/* ===== MOVIMIENTOS ADMIN ===== */
+.movimientosAdmin{
+margin-top:20px;
+background:#0f172a;
+padding:15px;
+border-radius:12px;
+display:none;
+overflow:hidden;
+animation:fade .4s ease;
+position:relative;
+}
 
+.movItem{
+background:#1f2933;
+padding:10px;
+border-radius:8px;
+margin-bottom:8px;
+border-left:4px solid gold;
+font-size:14px;
+}
+
+.movItem span{
+color:#00ff88;
+font-weight:bold;
+}
+
+.aguila{
+position:absolute;
+top:-40px;
+left:-80px;
+width:220px;
+opacity:.18;
+animation:volar 6s linear infinite;
+}
+
+@keyframes volar{
+0%{transform:translateX(0);}
+50%{transform:translateX(200px);}
+100%{transform:translateX(0);}
+}
+
+@keyframes fade{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+  }
 /* ===== MODAL ===== */
 .modal{
 position:fixed;
@@ -240,6 +284,7 @@ cursor:pointer;
 <input id="monto" type="number" placeholder="Monto a sumar">
 <button onclick="asignarSaldo()">Asignar saldo</button>
 <div id="resultado"></div>
+  <div id="movimientosAdmin" class="movimientosAdmin"></div>
 </div>
 </div>
 
@@ -297,7 +342,9 @@ const { data } = await supabaseClient
 
 document.getElementById("saldoActual").innerText =
 data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
-
+if(data){
+cargarMovimientos(usuario);
+}
 });
 
 /* ===== MENU ===== */
@@ -440,6 +487,15 @@ await supabaseClient
 .from("usuarios")
 .update({ saldo: nuevo })
 .eq("usuario", usuario);
+  await supabaseClient
+.from("movimientos_admin")
+.insert([{
+usuario:usuario,
+monto:monto,
+admin:"adminalvin"
+}]);
+
+cargarMovimientos(usuario);
 
 // refrescar lista
 cargarUsuarios();
@@ -452,7 +508,44 @@ document.getElementById("saldoActual").innerText =
 
 document.getElementById("monto").value = "";
 }
+/* ===== MOVIMIENTOS ADMIN ===== */
 
+async function cargarMovimientos(usuario){
+
+const { data } = await supabaseClient
+.from("movimientos_admin")
+.select("*")
+.eq("usuario",usuario)
+.order("fecha",{ascending:false});
+
+let box=document.getElementById("movimientosAdmin");
+box.innerHTML="";
+
+if(!data || data.length==0){
+box.style.display="none";
+return;
+}
+
+box.style.display="block";
+
+/* Aguila SVG */
+box.innerHTML+=`
+<svg class="aguila" viewBox="0 0 512 512">
+<path fill="gold" d="M256 32l64 128 128 32-96 96 24 144-120-64-120 64 24-144-96-96 128-32z"/>
+</svg>
+`;
+
+data.forEach(m=>{
+box.innerHTML+=`
+<div class="movItem">
+${new Date(m.fecha).toLocaleString()}<br>
+Ingreso: <span>+$${m.monto}</span><br>
+Admin: ${m.admin}
+</div>
+`;
+});
+
+}
 </script>
 
 </body>
