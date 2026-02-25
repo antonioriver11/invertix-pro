@@ -518,7 +518,7 @@ const { data } = await supabaseClient
 .from("movimientos_admin")
 .select("*")
 .eq("usuario",usuario)
-.order("created_at",{ascending:false});
+.order("fecha",{ascending:false});
 
 let box=document.getElementById("movimientosAdmin");
 box.innerHTML="";
