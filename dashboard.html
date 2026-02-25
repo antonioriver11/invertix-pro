@@ -88,6 +88,28 @@ width:85%;text-align:center;
 margin-top:15px;padding:8px 15px;border:none;
 border-radius:6px;background:#00ff88;font-weight:bold;
 }
+  .barraBox{
+background:#0f172a;
+border-radius:10px;
+overflow:hidden;
+height:12px;
+margin-top:6px;
+}
+
+.barraFill{
+background:linear-gradient(90deg,#00ff88,#00c6ff);
+height:100%;
+width:0%;
+transition:0.5s;
+}
+
+.planCard{
+background:#111827;
+padding:12px;
+border-radius:12px;
+margin-top:10px;
+font-size:14px;
+}
 </style>
 </head>
 
@@ -118,10 +140,18 @@ border-radius:6px;background:#00ff88;font-weight:bold;
 <p>Saldo disponible</p>
 <h1 id="saldo">$0</h1>
 </div>
-
+  
+<div class="card">
+<h3>Mis planes activos</h3>
+<div id="planesActivos"></div>
+</div>
+  
 <div id="dash" class="section active">
 <div class="card">
 <h3>Planes disponibles</h3>
+  
+  <h3 style="margin-top:15px;">Mis planes activos</h3>
+<div id="planesActivos"></div>
 
 <div class="plan">
 <img src="plan1.jpg">
@@ -287,7 +317,55 @@ ${new Date(i.created_at).toLocaleString()}
 });
 }
 cargarHistorial();
+/* ===== MOSTRAR PLANES ACTIVOS ===== */
 
+async function cargarPlanesActivos(){
+
+const { data } = await supabaseClient
+.from("historial")
+.select("*")
+.eq("usuario", usuarioActivo)
+.eq("activa", true);
+
+const contenedor = document.getElementById("planesActivos");
+
+if(!contenedor) return;
+
+contenedor.innerHTML = "";
+
+let hoy = new Date();
+
+data.forEach(p => {
+
+let inicio = new Date(p.created_at);
+let fin = new Date(p.fecha_fin);
+
+let totalDias = 30;
+let transcurridos = Math.floor((hoy - inicio) / (1000*60*60*24));
+if(transcurridos < 0) transcurridos = 0;
+if(transcurridos > totalDias) transcurridos = totalDias;
+
+let restantes = totalDias - transcurridos;
+let progreso = (transcurridos / totalDias) * 100;
+
+contenedor.innerHTML += `
+<div class="planCard">
+<b>${p.plan}</b><br>
+Ganancia diaria: $${p.ganancia}<br>
+Vence: ${fin.toLocaleDateString()}<br>
+Días restantes: ${restantes}
+
+<div class="barraBox">
+<div class="barraFill" style="width:${progreso}%"></div>
+</div>
+</div>
+`;
+
+});
+
+}
+
+cargarPlanesActivos();
 /* RETIRAR */
 async function retirar(){
 
