@@ -515,26 +515,30 @@ async function cargarMovimientos(usuario){
 
 const { data, error } = await supabaseClient
 .from("movimientos_admin")
-.select("usuario,monto,admin,fecha")
+.select("*")
 .eq("usuario", usuario)
 .order("fecha", { ascending: false });
 
-if(error){
-console.log("Error movimientos:", error);
-return;
-}
+console.log("Movimientos:", data);
+console.log("Error:", error);
 
 let box = document.getElementById("movimientosAdmin");
 box.innerHTML = "";
 
+if(error){
+box.style.display = "block";
+box.innerHTML = "<div style='color:red'>Error cargando movimientos</div>";
+return;
+}
+
 if(!data || data.length === 0){
-box.style.display = "none";
+box.style.display = "block";
+box.innerHTML = "<div style='color:orange'>No hay movimientos para este usuario</div>";
 return;
 }
 
 box.style.display = "block";
 
-/* Aguila */
 box.innerHTML += `
 <svg class="aguila" viewBox="0 0 512 512">
 <path fill="gold" d="M256 32l64 128 128 32-96 96 24 144-120-64-120 64 24-144-96-96 128-32z"/>
@@ -552,7 +556,6 @@ Admin: ${m.admin}
 });
 
 }
-
 </script>
 
 </body>
