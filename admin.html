@@ -267,7 +267,7 @@ cursor:pointer;
 </header>
 
 <div class="sidebar" id="sidebar">
-<h3>INVERTIX ADMIN</h3>
+<h3>INVERTIX ADMIN💲🤫</h3>
 
 <button class="sideBtn" onclick="showSection('asignar')">➕ Asignar saldo</button>
 <button class="sideBtn" onclick="showSection('retiros')">💸 Retiros</button>
@@ -340,12 +340,13 @@ const { data } = await supabaseClient
 .eq("usuario", usuario)
 .single();
 
-document.getElementById("saldoActual").innerText =
-data ? "Saldo actual: $" + data.saldo : "Usuario no encontrado";
 if(data){
+document.getElementById("saldoActual").innerText = "Saldo actual: $" + data.saldo;
 cargarMovimientos(usuario);
+}else{
+document.getElementById("saldoActual").innerText = "Usuario no encontrado";
+document.getElementById("movimientosAdmin").style.display="none";
 }
-});
 
 /* ===== MENU ===== */
 menuBtn.onclick=()=>{
