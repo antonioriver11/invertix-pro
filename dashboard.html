@@ -247,9 +247,9 @@ await supabaseClient.from("usuarios")
 .update({ saldo: usuarioData.saldo - precio })
 .eq("usuario",usuarioActivo);
 
-/* AGREGADO 40 DIAS */
+/* AGREGADO 30 DIAS */
 let fechaFin = new Date();
-fechaFin.setDate(fechaFin.getDate() + 40);
+fechaFin.setDate(fechaFin.getDate() + 30);
 
 await supabaseClient.from("historial")
 .insert({usuario:usuarioActivo,plan,precio,ganancia,fecha_fin:fechaFin.toISOString()});
