@@ -280,13 +280,17 @@ cursor:pointer;
 <div id="asignar">
 <div class="card">
 <input id="usuario" placeholder="Usuario">
+
 <div id="saldoActual" style="color:#00ff88"></div>
-<input id="monto" type="number" placeholder="Monto a sumar">
-<button onclick="asignarSaldo()">Asignar saldo</button>
-<div id="resultado"></div>
-  <div id="movimientosAdmin" class="movimientosAdmin"></div>
-</div>
-</div>
+
+<select id="tipoOperacion">
+  <option value="sumar">➕ Sumar saldo</option>
+  <option value="restar">➖ Restar saldo</option>
+</select>
+
+<input id="monto" type="number" placeholder="Monto">
+
+<button onclick="asignarSaldo()">Ejecutar</button>
 
 <!-- RETIROS -->
 <div id="retiros" style="display:none">
@@ -462,10 +466,11 @@ document.getElementById("modalHistorial").style.display="none";
 }
 
 /* ===== ASIGNAR SALDO ===== */
-async function asignarSaldo(){
+ async function asignarSaldo(){
 
 let usuario = document.getElementById("usuario").value.trim();
 let monto = Number(document.getElementById("monto").value);
+let tipo = document.getElementById("tipoOperacion").value;
 
 if(!usuario || monto <= 0){
 alert("Datos inválidos");
@@ -483,33 +488,47 @@ alert("Usuario no existe");
 return;
 }
 
-let nuevo = Number(data.saldo) + monto;
+let saldoActual = Number(data.saldo);
+let nuevoSaldo = saldoActual;
+
+if(tipo === "sumar"){
+nuevoSaldo = saldoActual + monto;
+}
+
+if(tipo === "restar"){
+
+if(monto > saldoActual){
+alert("No puedes restar más del saldo actual");
+return;
+}
+
+nuevoSaldo = saldoActual - monto;
+}
 
 await supabaseClient
 .from("usuarios")
-.update({ saldo: nuevo })
+.update({ saldo: nuevoSaldo })
 .eq("usuario", usuario);
-  await supabaseClient
+
+await supabaseClient
 .from("movimientos_admin")
 .insert([{
 usuario: usuario,
-monto: monto,
-admin:"adminalvin"
+monto: tipo === "sumar" ? monto : -monto,
+admin: "adminalvin"
 }]);
 
-setTimeout(()=>{
 cargarMovimientos(usuario);
-}, 500);
-// refrescar lista
 cargarUsuarios();
 
 document.getElementById("resultado").innerText =
-"Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
+"Saldo actualizado ✅ Nuevo saldo: $" + nuevoSaldo;
 
 document.getElementById("saldoActual").innerText =
-"Saldo actual: $" + nuevo;
+"Saldo actual: $" + nuevoSaldo;
 
 document.getElementById("monto").value = "";
+
 }
 /* ===== MOVIMIENTOS ADMIN ===== */
 async function cargarMovimientos(usuario){
