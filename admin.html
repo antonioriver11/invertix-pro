@@ -356,14 +356,18 @@ content.classList.toggle("shift");
 }
 
 /* ===== SECCIONES ===== */
-function showSection(id){
+  function showSection(id){
 ["asignar","retiros","usuarios"].forEach(s=>{
 document.getElementById(s).style.display="none";
 });
 document.getElementById(id).style.display="block";
 sidebar.classList.remove("active");
 content.classList.remove("shift");
+
+if(id === "retiros"){
+cargarRetirosAdmin();
 }
+  }
 
 /* ===== USUARIOS ===== */
 async function cargarUsuarios(){
