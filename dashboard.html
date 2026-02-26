@@ -214,7 +214,76 @@ font-size:14px;
     <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
     <h4>Canal VIP</h4>
   </div>
+ /* ===== GRID CONTACTO ===== */
+.contactoGrid{
+display:flex;
+gap:12px;
+margin-top:15px;
+}
 
+.asesorMini,
+.canalMini{
+flex:1;
+padding:15px 10px;
+text-align:center;
+border-radius:14px;
+cursor:pointer;
+transition:.3s;
+}
+
+.asesorMini img,
+.canalMini img{
+width:40px;
+margin-bottom:8px;
+}
+
+/* ASESOR AZUL */
+.asesorMini{
+background:linear-gradient(135deg,#0ea5e9,#0284c7);
+color:white;
+}
+
+.asesorMini:hover{
+transform:translateY(-4px);
+box-shadow:0 8px 20px rgba(14,165,233,0.5);
+}
+
+/* CANAL DORADO PREMIUM */
+.canalMini{
+position:relative;
+background:linear-gradient(135deg,#d4af37,#ffd700,#f5d76e);
+color:#111;
+overflow:hidden;
+}
+
+/* BRILLO ANIMADO */
+.canalMini::before{
+content:"";
+position:absolute;
+top:0;
+left:-100%;
+width:60%;
+height:100%;
+background:linear-gradient(
+90deg,
+transparent,
+rgba(255,255,255,0.6),
+transparent
+);
+transform:skewX(-25deg);
+animation:brilloCanal 4s infinite;
+}
+
+@keyframes brilloCanal{
+0%{left:-100%;}
+60%{left:130%;}
+100%{left:130%;}
+}
+
+.canalMini:hover{
+transform:translateY(-4px);
+box-shadow:0 8px 25px rgba(255,215,0,0.6);
+                           }
 </div>
 </style>
 </head>
