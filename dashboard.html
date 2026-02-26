@@ -339,6 +339,7 @@ if(transcurridos > totalDias) transcurridos = totalDias;
 let restantes = totalDias - transcurridos;
 let progreso = (transcurridos / totalDias) * 100;
 if(progreso < 3 && !finalizado) progreso = 3;
+let porcentaje = Math.floor(progreso);
 
 let finalizado = hoy > fin;
 
