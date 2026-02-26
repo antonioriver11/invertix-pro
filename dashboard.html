@@ -123,7 +123,7 @@ margin-top:6px;
 .barraFill{
 background:linear-gradient(90deg,#00ff88,#00c6ff);
 height:100%;
-width:0%;
+min-width:3px;
 transition:0.5s;
 }
 
@@ -338,7 +338,7 @@ if(transcurridos > totalDias) transcurridos = totalDias;
 
 let restantes = totalDias - transcurridos;
 let progreso = (transcurridos / totalDias) * 100;
-let porcentaje = Math.floor(progreso);
+if(progreso < 3 && !finalizado) progreso = 3;
 
 let finalizado = hoy > fin;
 
