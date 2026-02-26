@@ -305,41 +305,59 @@ width:28px;
 <p>Saldo disponible</p>
 <h1 id="saldo">$0</h1>
 </div>
+<!-- DASHBOARD -->
 <div id="dash" class="section active">
-<div class="card">
-<h3>Planes disponibles</h3>
+  <div class="card">
+    <h3>Planes disponibles</h3>
 
-<div class="plan">
-<img src="plan1.jpg">
-<div><b>Starter</b><p>$25 → $5/día</p></div>
-<button class="buy" onclick="comprar(25,5,'Starter')">Comprar</button>
-</div>
-
-<div class="plan">
-<img src="plan2.jpg">
-<div><b>Growth</b><p>$50 → $7/día</p></div>
-<button class="buy" onclick="comprar(50,7,'Growth')">Comprar</button>
-</div>
-
-<div class="plan">
-<img src="plan3.jpg">
-<div><b>Pro</b><p>$75 → $10/día</p></div>
-<button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
-</div>
-  <!-- ASESOR OFICIAL PREMIUM -->
-<div class="card asesorCard" onclick="abrirTelegram()">
-  <div class="asesorHeader">
-    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="telegramLogo">
-    <div>
-      <h3>Asesor Oficial</h3>
-      <p>Atención directa con gerencia</p>
+    <div class="plan">
+      <img src="plan1.jpg">
+      <div>
+        <b>Starter</b>
+        <p>$25 → $5/día</p>
+      </div>
+      <button class="buy" onclick="comprar(25,5,'Starter')">
+        Comprar
+      </button>
     </div>
-  </div>
-  <div class="asesorBoton">
-    Abrir Telegram
-  </div>
-</div>
 
+    <div class="plan">
+      <img src="plan2.jpg">
+      <div>
+        <b>Growth</b>
+        <p>$50 → $7/día</p>
+      </div>
+      <button class="buy" onclick="comprar(50,7,'Growth')">
+        Comprar
+      </button>
+    </div>
+
+    <div class="plan">
+      <img src="plan3.jpg">
+      <div>
+        <b>Pro</b>
+        <p>$75 → $10/día</p>
+      </div>
+      <button class="buy" onclick="comprar(75,10,'Pro')">
+        Comprar
+      </button>
+    </div>
+
+    <!-- ASESOR -->
+    <div class="card asesorCard" onclick="abrirTelegram()">
+      <div class="asesorHeader">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="telegramLogo">
+        <div>
+          <h3>Asesor Oficial</h3>
+          <p>Atención directa con gerencia</p>
+        </div>
+      </div>
+      <div class="asesorBoton">
+        Abrir Telegram
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <div id="historial" class="section">
