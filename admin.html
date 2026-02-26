@@ -506,7 +506,16 @@ cargarMovimientos(usuario);
 }, 500);
 // refrescar lista
 cargarUsuarios();
-/* ===== RETIROS ADMIN ===== */
+  
+document.getElementById("resultado").innerText =
+"Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
+
+document.getElementById("saldoActual").innerText =
+"Saldo actual: $" + nuevo;
+
+document.getElementById("monto").value = "";
+}
+  /* ===== RETIROS ADMIN ===== */
 async function cargarRetirosAdmin(){
 
 const { data, error } = await supabaseClient
@@ -548,8 +557,9 @@ Rechazar
 `;
 });
 
-        }
-  async function aprobarRetiro(id){
+}
+
+async function aprobarRetiro(id){
 
 await supabaseClient
 .from("retiros")
@@ -567,14 +577,6 @@ await supabaseClient
 .eq("id",id);
 
 cargarRetirosAdmin();
-  }
-document.getElementById("resultado").innerText =
-"Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
-
-document.getElementById("saldoActual").innerText =
-"Saldo actual: $" + nuevo;
-
-document.getElementById("monto").value = "";
 }
 /* ===== MOVIMIENTOS ADMIN ===== */
 async function cargarMovimientos(usuario){
@@ -608,6 +610,7 @@ box.style.display = "block";
 box.innerHTML += `
 <svg class="aguila" viewBox="0 0 512 512">
 <path fill="gold" d="M256 32l64 128 128 32-96 96 24 144-120-64-120 64 24-144-96-96 128-32z"/>
+
 </svg>
 `;
 
