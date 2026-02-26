@@ -149,9 +149,6 @@ font-size:14px;
 <div id="dash" class="section active">
 <div class="card">
 <h3>Planes disponibles</h3>
-  
-  <h3 style="margin-top:15px;">Mis planes activos</h3>
-<div id="planesActivos"></div>
 
 <div class="plan">
 <img src="plan1.jpg">
@@ -299,6 +296,7 @@ cargarHistorial();
 
 /* HISTORIAL */
 async function cargarHistorial(){
+
 const { data } = await supabaseClient
 .from("historial")
 .select("*")
@@ -306,36 +304,10 @@ const { data } = await supabaseClient
 .order("created_at",{ascending:false});
 
 listaHistorial.innerHTML="";
-data.forEach(i=>{
-listaHistorial.innerHTML+=`
-<div class="histItem">
-<b>${i.plan}</b><br>
-Precio: $${i.precio}<br>
-Ganancia: $${i.ganancia}/día<br>
-${new Date(i.created_at).toLocaleString()}
-</div>`;
-});
-}
-cargarHistorial();
-/* ===== MOSTRAR PLANES ACTIVOS ===== */
-
-async function cargarPlanesActivos(){
-
-const { data } = await supabaseClient
-.from("historial")
-.select("*")
-.eq("usuario", usuarioActivo)
-.eq("activa", true);
-
-const contenedor = document.getElementById("planesActivos");
-
-if(!contenedor) return;
-
-contenedor.innerHTML = "";
 
 let hoy = new Date();
 
-data.forEach(p => {
+data.forEach(p=>{
 
 let inicio = new Date(p.created_at);
 let fin = new Date(p.fecha_fin);
@@ -348,11 +320,16 @@ if(transcurridos > totalDias) transcurridos = totalDias;
 let restantes = totalDias - transcurridos;
 let progreso = (transcurridos / totalDias) * 100;
 
-contenedor.innerHTML += `
+let estado = hoy > fin ? "Finalizado" : "Activo";
+
+listaHistorial.innerHTML += `
 <div class="planCard">
-<b>${p.plan}</b><br>
+<b style="font-size:18px">${p.plan}</b><br>
+Precio: $${p.precio}<br>
 Ganancia diaria: $${p.ganancia}<br>
+Comprado: ${inicio.toLocaleDateString()}<br>
 Vence: ${fin.toLocaleDateString()}<br>
+Estado: ${estado}<br>
 Días restantes: ${restantes}
 
 <div class="barraBox">
@@ -363,9 +340,8 @@ Días restantes: ${restantes}
 
 });
 
-}
-
-cargarPlanesActivos();
+                 }
+cargarHistorial();
 /* RETIRAR */
 async function retirar(){
 
