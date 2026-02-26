@@ -492,7 +492,11 @@ const { data } = await supabaseClient
 .order("created_at",{ascending:false});
 
 listaRetiros.innerHTML="";
+  let hayPendientes = false;
 data.forEach(r=>{
+  if(r.estado === "Pendiente"){
+  hayPendientes = true;
+  }
 listaRetiros.innerHTML+=`
 <div class="histItem">
 Monto: $${r.monto}<br>
@@ -502,6 +506,11 @@ Estado: <span class="estado-${r.estado.toLowerCase()}">${r.estado}</span><br>
 ${new Date(r.created_at).toLocaleString()}
 </div>`;
 });
+  if(hayPendientes){
+  badgeRetiro.style.display = "block";
+}else{
+  badgeRetiro.style.display = "none";
+  }
 }
 cargarRetiros();
 
