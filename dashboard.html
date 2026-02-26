@@ -207,6 +207,18 @@ border:1px solid rgba(0,136,204,0.4);
 color:white;
 cursor:pointer;
 transition:.3s;
+animation: asesorFloat 3s ease-in-out infinite;
+}
+  
+.asesorCard:hover{
+transform:translateY(-3px);
+box-shadow:0 10px 25px rgba(0,136,204,0.3);
+}
+
+@keyframes asesorFloat{
+0%{ transform: translateY(0px); }
+50%{ transform: translateY(-6px); }
+100%{ transform: translateY(0px); }
 }
 
 .asesorCard:hover{
