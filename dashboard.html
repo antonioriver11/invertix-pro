@@ -337,11 +337,10 @@ if(transcurridos < 0) transcurridos = 0;
 if(transcurridos > totalDias) transcurridos = totalDias;
 
 let restantes = totalDias - transcurridos;
+  let finalizado = hoy > fin;
 let progreso = (transcurridos / totalDias) * 100;
 if(progreso < 3 && !finalizado) progreso = 3;
 let porcentaje = Math.floor(progreso);
-
-let finalizado = hoy > fin;
 
 let estadoTexto = finalizado ? "Plan completado" : "Activo";
 let estadoClase = finalizado ? "estado-finalizado" : "estado-activo";
