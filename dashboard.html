@@ -193,28 +193,14 @@ transition:0.5s;
 box-shadow:0 0 8px rgba(255,215,0,0.6);
 }
 
-.planCard{
+..planCard{
 background:#111827;
 padding:12px;
 border-radius:12px;
 margin-top:10px;
 font-size:14px;
 }
-<!-- CONTENEDOR CONTACTO -->
-<div class="contactoGrid">
-
-  <!-- ASESOR -->
-  <div class="card asesorMini" onclick="abrirTelegram()">
-    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
-    <h4>Asesor</h4>
-  </div>
-
-  <!-- CANAL -->
-  <div class="card canalMini" onclick="abrirCanal()">
-    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
-    <h4>Canal VIP</h4>
-  </div>
- /* ===== GRID CONTACTO ===== */
+  /* ===== GRID CONTACTO ===== */
 .contactoGrid{
 display:flex;
 gap:12px;
@@ -224,7 +210,7 @@ margin-top:15px;
 .asesorMini,
 .canalMini{
 flex:1;
-padding:15px 10px;
+padding:15px;
 text-align:center;
 border-radius:14px;
 cursor:pointer;
@@ -237,7 +223,7 @@ width:40px;
 margin-bottom:8px;
 }
 
-/* ASESOR AZUL */
+/* ASESOR */
 .asesorMini{
 background:linear-gradient(135deg,#0ea5e9,#0284c7);
 color:white;
@@ -248,7 +234,7 @@ transform:translateY(-4px);
 box-shadow:0 8px 20px rgba(14,165,233,0.5);
 }
 
-/* CANAL DORADO PREMIUM */
+/* CANAL DORADO */
 .canalMini{
 position:relative;
 background:linear-gradient(135deg,#d4af37,#ffd700,#f5d76e);
@@ -256,7 +242,6 @@ color:#111;
 overflow:hidden;
 }
 
-/* BRILLO ANIMADO */
 .canalMini::before{
 content:"";
 position:absolute;
@@ -283,8 +268,7 @@ animation:brilloCanal 4s infinite;
 .canalMini:hover{
 transform:translateY(-4px);
 box-shadow:0 8px 25px rgba(255,215,0,0.6);
-                           }
-</div>
+    }
 </style>
 </head>
 
@@ -352,35 +336,20 @@ box-shadow:0 8px 25px rgba(255,215,0,0.6);
         Comprar
       </button>
     </div>
+    <!-- CONTACTO MINI -->
+<div class="contactoGrid">
 
-    <!-- ASESOR -->
-    <div class="card asesorCard" onclick="abrirTelegram()">
-      <div class="asesorHeader">
-        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="telegramLogo">
-        <div>
-          <h3>Asesor Oficial</h3>
-          <p>Atención directa con gerencia</p>
-        </div>
-      </div>
-      <div class="asesorBoton">
-        Abrir Telegram
-      </div>
-    </div>
-
+  <div class="asesorMini" onclick="abrirTelegram()">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+    <h4>Asesor</h4>
   </div>
+
+  <div class="canalMini" onclick="abrirCanal()">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+    <h4>Canal VIP</h4>
+  </div>
+
 </div>
-<!-- CANAL OFICIAL -->
-<div class="card asesorCard" onclick="abrirCanal()">
-  <div class="asesorHeader">
-    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="telegramLogo">
-    <div>
-      <h3>Canal Oficial</h3>
-      <p>Noticias, pagos y anuncios</p>
-    </div>
-  </div>
-  <div class="asesorBoton">
-    Ir al Canal
-  </div>
 </div>
 <div id="historial" class="section">
 <div class="card">
