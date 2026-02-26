@@ -89,6 +89,30 @@ margin-top:15px;padding:8px 15px;border:none;
 border-radius:6px;background:#00ff88;font-weight:bold;
 }
   .barraBox{
+    .estado-activo{
+color:#22c55e;
+font-weight:bold;
+}
+
+.estado-finalizado{
+color:#9ca3af;
+font-weight:bold;
+}
+
+.porcentaje{
+font-size:12px;
+margin-top:4px;
+opacity:0.8;
+}
+
+.planCard{
+background:linear-gradient(145deg,#0f172a,#111827);
+padding:15px;
+border-radius:14px;
+margin-top:12px;
+font-size:14px;
+box-shadow:0 4px 15px rgba(0,0,0,0.4);
+}
 background:#0f172a;
 border-radius:10px;
 overflow:hidden;
@@ -314,28 +338,41 @@ if(transcurridos > totalDias) transcurridos = totalDias;
 
 let restantes = totalDias - transcurridos;
 let progreso = (transcurridos / totalDias) * 100;
+let porcentaje = Math.floor(progreso);
 
-let estado = hoy > fin ? "Finalizado" : "Activo";
+let finalizado = hoy > fin;
+
+let estadoTexto = finalizado ? "Plan completado" : "Activo";
+let estadoClase = finalizado ? "estado-finalizado" : "estado-activo";
 
 listaHistorial.innerHTML += `
 <div class="planCard">
-<b style="font-size:18px">${p.plan}</b><br>
+
+<b style="font-size:18px">${p.plan}</b><br><br>
+
 Precio: $${p.precio}<br>
 Ganancia diaria: $${p.ganancia}<br>
 Comprado: ${inicio.toLocaleDateString()}<br>
 Vence: ${fin.toLocaleDateString()}<br>
-Estado: ${estado}<br>
-Días restantes: ${restantes}
+
+Estado: <span class="${estadoClase}">${estadoTexto}</span><br>
+
+${!finalizado ? `Días restantes: ${restantes}<br>` : ""}
 
 <div class="barraBox">
 <div class="barraFill" style="width:${progreso}%"></div>
 </div>
+
+<div class="porcentaje">
+${porcentaje}% completado
+</div>
+
 </div>
 `;
 
 });
 
-                 }
+}
 cargarHistorial();
 /* RETIRAR */
 async function retirar(){
