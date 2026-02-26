@@ -502,7 +502,68 @@ cargarMovimientos(usuario);
 }, 500);
 // refrescar lista
 cargarUsuarios();
+/* ===== RETIROS ADMIN ===== */
+async function cargarRetirosAdmin(){
 
+const { data, error } = await supabaseClient
+.from("retiros")
+.select("*")
+.order("created_at",{ascending:false});
+
+let cont = document.getElementById("listaRetiros");
+cont.innerHTML="";
+
+if(error){
+cont.innerHTML="Error cargando retiros";
+return;
+}
+
+if(!data || data.length === 0){
+cont.innerHTML="No hay retiros";
+return;
+}
+
+data.forEach(r=>{
+cont.innerHTML+=`
+<div class="retiro">
+<b>Usuario:</b> ${r.usuario}<br>
+<b>Monto:</b> $${r.monto}<br>
+<b>Banco:</b> ${r.banco}<br>
+<b>Cuenta:</b> ${r.cuenta}<br>
+<b>Estado:</b> ${r.estado}<br><br>
+
+<button class="aprobar" onclick="aprobarRetiro(${r.id})">
+Aprobar
+</button>
+
+<button class="rechazar" onclick="rechazarRetiro(${r.id})">
+Rechazar
+</button>
+
+</div>
+`;
+});
+
+        }
+  async function aprobarRetiro(id){
+
+await supabaseClient
+.from("retiros")
+.update({estado:"Aprobado"})
+.eq("id",id);
+
+cargarRetirosAdmin();
+}
+
+async function rechazarRetiro(id){
+
+await supabaseClient
+.from("retiros")
+.update({estado:"Rechazado"})
+.eq("id",id);
+
+cargarRetirosAdmin();
+  }
 document.getElementById("resultado").innerText =
 "Saldo actualizado ✅ Nuevo saldo: $" + nuevo;
 
