@@ -249,10 +249,21 @@ font-size:14px;
 </div>
 
 <div class="menu">
-<button onclick="showSection('dash')">Dashboard</button>
-<button onclick="showSection('historial')">Historial</button>
-<button onclick="showSection('retiro')">Retiro</button>
-<button onclick="showSection('recargar')">Recargar</button>
+<button onclick="showSection('dash')" id="btnDash">
+🏠<span>Dashboard</span>
+</button>
+
+<button onclick="showSection('historial')" id="btnHistorial">
+📄<span>Historial</span>
+</button>
+
+<button onclick="showSection('retiro')" id="btnRetiro">
+💸<span>Retiro</span>
+</button>
+
+<button onclick="showSection('recargar')" id="btnRecargar">
+➕<span>Recargar</span>
+</button>
 </div>
 
 <script>
