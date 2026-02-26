@@ -202,52 +202,47 @@ font-size:14px;
 }
   /* ===== ASESOR OFICIAL ===== */
 .asesorCard{
-background: linear-gradient(135deg,#00ff88,#00c6ff);
-color:black;
+background: linear-gradient(135deg,#0f172a,#1e293b);
+border:1px solid rgba(0,136,204,0.4);
+color:white;
 cursor:pointer;
-position:relative;
-overflow:hidden;
 transition:.3s;
 }
 
 .asesorCard:hover{
-transform:scale(1.02);
+transform:translateY(-3px);
+box-shadow:0 10px 25px rgba(0,136,204,0.3);
 }
 
-.telegramBtn{
+.asesorHeader{
+display:flex;
+align-items:center;
+gap:15px;
+}
+
+.telegramLogo{
+width:45px;
+height:45px;
+}
+
+.asesorHeader h3{
+margin:0;
+color:#0088cc;
+}
+
+.asesorHeader p{
+margin:3px 0 0 0;
+font-size:13px;
+opacity:.7;
+}
+
+.asesorBoton{
 margin-top:15px;
-background:black;
-color:#00ff88;
+background:#0088cc;
+padding:8px 12px;
+border-radius:8px;
+text-align:center;
 font-weight:bold;
-}
-
-.telegramIcon{
-font-size:28px;
-background:white;
-width:50px;
-height:50px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-}
-  .telegramFloat{
-position:fixed;
-bottom:80px;
-right:20px;
-width:60px;
-height:60px;
-background:#00ff88;
-color:black;
-font-size:28px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-box-shadow:0 0 20px rgba(0,255,136,.6);
-cursor:pointer;
-z-index:9999;
-animation:floatPulse 2s infinite;
 }
 
 @keyframes floatPulse{
@@ -307,20 +302,20 @@ animation:floatPulse 2s infinite;
 <div><b>Pro</b><p>$75 → $10/día</p></div>
 <button class="buy" onclick="comprar(75,10,'Pro')">Comprar</button>
 </div>
-<!-- ASESOR OFICIAL -->
+  <!-- ASESOR OFICIAL PREMIUM -->
 <div class="card asesorCard" onclick="abrirTelegram()">
-  <div style="display:flex; align-items:center; gap:15px;">
-    <div class="telegramIcon">📩</div>
+  <div class="asesorHeader">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png" class="telegramLogo">
     <div>
-      <h3 style="margin:0;">Asesor Oficial</h3>
-      <p style="margin:5px 0 0 0; font-size:14px; opacity:.8;">
-        Contacta directamente con administración
-      </p>
+      <h3>Asesor Oficial</h3>
+      <p>Atención directa con gerencia</p>
     </div>
   </div>
-  <button class="telegramBtn">Chatear por Telegram</button>
+  <div class="asesorBoton">
+    Abrir Telegram
+  </div>
 </div>
-</div>
+
 </div>
 
 <div id="historial" class="section">
@@ -696,9 +691,9 @@ location.href="index.html";
 
 </script>
 <!-- BOTON FLOTANTE TELEGRAM -->
-<div class="telegramFloat" onclick="abrirTelegram()">
-  ✈️
-</div>
+  <div class="telegramFloat" onclick="abrirTelegram()">
+  <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+  </div>
   
 </body>
 </html>
