@@ -200,70 +200,22 @@ border-radius:12px;
 margin-top:10px;
 font-size:14px;
 }
-  /* ===== ASESOR OFICIAL ===== */
-.asesorCard{
-background: linear-gradient(135deg,#0f172a,#1e293b);
-border:1px solid rgba(0,136,204,0.4);
-color:white;
-cursor:pointer;
-transition:.3s;
-animation: asesorFloat 3s ease-in-out infinite;
-}
-  
-.asesorCard:hover{
-transform:translateY(-3px);
-box-shadow:0 10px 25px rgba(0,136,204,0.3);
-}
+<!-- CONTENEDOR CONTACTO -->
+<div class="contactoGrid">
 
-@keyframes asesorFloat{
-0%{ transform: translateY(0px); }
-50%{ transform: translateY(-6px); }
-100%{ transform: translateY(0px); }
-}
+  <!-- ASESOR -->
+  <div class="card asesorMini" onclick="abrirTelegram()">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+    <h4>Asesor</h4>
+  </div>
 
-.asesorCard:hover{
-transform:translateY(-3px);
-box-shadow:0 10px 25px rgba(0,136,204,0.3);
-}
+  <!-- CANAL -->
+  <div class="card canalMini" onclick="abrirCanal()">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111646.png">
+    <h4>Canal VIP</h4>
+  </div>
 
-.asesorHeader{
-display:flex;
-align-items:center;
-gap:15px;
-}
-
-.telegramLogo{
-width:45px;
-height:45px;
-}
-
-.asesorHeader h3{
-margin:0;
-color:#0088cc;
-}
-
-.asesorHeader p{
-margin:3px 0 0 0;
-font-size:13px;
-opacity:.7;
-}
-
-.asesorBoton{
-margin-top:15px;
-background:#0088cc;
-padding:8px 12px;
-border-radius:8px;
-text-align:center;
-font-weight:bold;
-}
-/* ===== CANAL OFICIAL ===== */
-.canalCard{
-border:1px solid rgba(0,255,136,0.4);
-}
-
-.canalCard .asesorHeader h3{
-color:#00ff88;
-}
+</div>
 </style>
 </head>
 
