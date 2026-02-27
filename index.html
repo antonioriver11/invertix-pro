@@ -132,7 +132,22 @@ padding:20px;
 opacity:.5;
 font-size:13px;
 }
+.mov{
+display:flex;
+justify-content:space-between;
+margin-bottom:8px;
+font-size:14px;
+opacity:0;
+transform:translateY(-10px);
+animation:fadeSlide .5s ease forwards;
+}
 
+@keyframes fadeSlide{
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
 </style>
 </head>
 
