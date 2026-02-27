@@ -227,12 +227,15 @@ const feed = document.getElementById("feed");
 feed.prepend(div);
 
 if(feed.children.length > 6){
-feed.removeChild(feed.lastChild);
+let ultimo = feed.lastChild;
+ultimo.style.opacity="0";
+ultimo.style.transform="translateY(10px)";
+setTimeout(()=> ultimo.remove(),400);
 }
 
 }
 
-setInterval(generarMovimiento, 3000);
+setInterval(generarMovimiento, 2500);
 generarMovimiento();
 
 </script>
