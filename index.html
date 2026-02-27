@@ -158,27 +158,7 @@ font-size:13px;
 
 <div class="movimientos">
 <h3>Actividad en tiempo real</h3>
-
-<div class="mov">
-<span>Recargar</span>
-<span class="recarga">+$356</span>
-</div>
-
-<div class="mov">
-<span>Retirar</span>
-<span class="retiro">-$210</span>
-</div>
-
-<div class="mov">
-<span>Recargar</span>
-<span class="recarga">+$890</span>
-</div>
-
-<div class="mov">
-<span>Retirar</span>
-<span class="retiro">-$120</span>
-</div>
-
+<div id="feed"></div>
 </div>
 
 <div class="stats">
@@ -203,6 +183,43 @@ font-size:13px;
 <div class="footer">
 © 2026 Invertix Pro. Todos los derechos reservados.
 </div>
+<script>
 
+const nombres = [
+"irvin","daniel","sofia","luis","carlos",
+"mariana","andres","valeria","kevin","paola",
+"esteban","michelle","fernando","alejandro"
+];
+
+function generarMovimiento(){
+
+let tipo = Math.random() > 0.5 ? "recarga" : "retiro";
+let nombre = nombres[Math.floor(Math.random()*nombres.length)];
+let monto = Math.floor(Math.random()*280)+20;
+
+let div = document.createElement("div");
+div.className="mov";
+
+let oculto = nombre.substring(0,3)+"***";
+
+div.innerHTML = `
+<span>${tipo==="recarga"?"🟢":"🔴"} ${oculto} ${tipo==="recarga"?"recargó":"retiró"}</span>
+<span class="${tipo}">$${monto}</span>
+`;
+
+const feed = document.getElementById("feed");
+
+feed.prepend(div);
+
+if(feed.children.length > 6){
+feed.removeChild(feed.lastChild);
+}
+
+}
+
+setInterval(generarMovimiento, 3000);
+generarMovimiento();
+
+</script>
 </body>
 </html>
