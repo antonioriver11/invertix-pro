@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión - Invertix Pro</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+
+<body style="background:#0b1120;color:white;font-family:Segoe UI;text-align:center;padding:40px;">
+
+<h2>Iniciar sesión</h2>
+
+<input id="usuario" placeholder="Usuario" style="padding:10px;margin:10px;width:80%;max-width:300px;">
+<br>
+<input id="password" type="password" placeholder="Contraseña" style="padding:10px;margin:10px;width:80%;max-width:300px;">
+<br>
+
+<button onclick="login()" style="padding:10px 20px;margin-top:10px;background:#00c6ff;border:none;color:white;border-radius:8px;">
+Ingresar
+</button>
+
+<p style="margin-top:20px;">
+¿No tienes cuenta? <a href="registro.html" style="color:#00e0ff;">Registrarme</a>
+</p>
+
+<script>
+
+const { createClient } = supabase;
+
+const supabaseClient = createClient(
+"https://vntnciltzouiqkzzwuxy.supabase.co",
+"TU_PUBLIC_KEY_AQUI"
+);
+
+async function login(){
+
+let usuario = document.getElementById("usuario").value;
+let password = document.getElementById("password").value;
+
+const { data } = await supabaseClient
+.from("usuarios")
+.select("*")
+.eq("usuario",usuario)
+.eq("password",password)
+.single();
+
+if(!data){
+alert("Datos incorrectos");
+return;
+}
+
+localStorage.setItem("usuarioActivo", usuario);
+location.href="dashboard.html";
+
+}
+
+</script>
+
+</body>
+</html>
