@@ -179,18 +179,18 @@ transform:translateY(0);
 <div class="stats">
 
 <div class="stat">
-<h2>+2,350</h2>
+<h2 id="telegramCount">0</h2>
+<p>Miembros en Telegram</p>
+</div>
+
+<div class="stat">
+<h2 id="usersCount">0</h2>
 <p>Usuarios activos</p>
 </div>
 
 <div class="stat">
-<h2>$128,450+</h2>
+<h2 id="moneyCount">0</h2>
 <p>Ganancias pagadas</p>
-</div>
-
-<div class="stat">
-<h2>30 días</h2>
-<p>Duración promedio de plan</p>
 </div>
 
 </div>
@@ -239,5 +239,37 @@ setInterval(generarMovimiento, 2500);
 generarMovimiento();
 
 </script>
+  <script>
+
+function animarContador(id, final, prefijo=""){
+
+let actual = 0;
+let incremento = final / 80;
+let elemento = document.getElementById(id);
+
+let intervalo = setInterval(()=>{
+
+actual += incremento;
+
+if(actual >= final){
+actual = final;
+clearInterval(intervalo);
+}
+
+elemento.textContent = prefijo + Math.floor(actual).toLocaleString();
+
+},20);
+
+}
+
+window.addEventListener("load", ()=>{
+
+animarContador("telegramCount", 9642, "+");
+animarContador("usersCount", 1873, "+");
+animarContador("moneyCount", 48730, "$");
+
+});
+
+  </script>
 </body>
 </html>
