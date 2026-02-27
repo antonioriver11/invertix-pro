@@ -187,6 +187,33 @@ margin-bottom:8px;
 opacity:.7;
 font-size:14px;
 }
+
+  /* TICKER RETIROS */
+.ticker{
+background:#0f172a;
+overflow:hidden;
+white-space:nowrap;
+padding:12px 0;
+margin:30px 0;
+border-top:1px solid rgba(0,198,255,0.2);
+border-bottom:1px solid rgba(0,198,255,0.2);
+}
+
+.ticker-track{
+display:inline-block;
+animation:scroll 25s linear infinite;
+}
+
+.ticker span{
+margin:0 40px;
+color:#22c55e;
+font-weight:500;
+}
+
+@keyframes scroll{
+from{transform:translateX(0);}
+to{transform:translateX(-50%);}
+  }
 </style>
 </head>
 
@@ -260,6 +287,19 @@ font-size:14px;
 </div>
 
 </div>
+<div class="footer">
+  </div>  <!-- cierre comoFunciona -->
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span>✔ Retiro aprobado: mar*** - $82</span>
+    <span>✔ Retiro aprobado: sof*** - $47</span>
+    <span>✔ Retiro aprobado: and*** - $121</span>
+    <span>✔ Retiro aprobado: val*** - $63</span>
+    <span>✔ Retiro aprobado: luis*** - $98</span>
+  </div>
+</div>
+
 <div class="footer">
 © 2026 Invertix Pro. Todos los derechos reservados.
 </div>
